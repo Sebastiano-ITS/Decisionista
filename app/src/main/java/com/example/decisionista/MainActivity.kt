@@ -51,6 +51,8 @@ import com.example.decisionista.ui.home.HomeScreen
 import com.example.decisionista.ui.oracle.OracleScreen
 import com.example.decisionista.ui.profile.ProfileScreen
 import com.example.decisionista.ui.splash.SplashScreen
+import androidx.navigation.compose.rememberNavController
+import com.example.decisionista.navigation.AppNavHost
 import com.example.decisionista.ui.theme.DecisionistaAppTheme
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
@@ -162,7 +164,6 @@ private fun clearLoggedInUser(context: Context) {
     }
 }
 // --- End Utility Functions ---
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -330,7 +331,7 @@ fun DecisionistaApp() {
 
     val handleAttemptToLogin: (String, String) -> Unit = { emailAttempt, passwordAttempt ->
         val normalizedEmail = emailAttempt.lowercase(Locale.ROOT)
-        
+
         val message: String = if (registeredUsers.isEmpty() && normalizedEmail.isNotBlank()) {
             "Nessun account trovato. Per favore, registrati."
         } else if (!registeredUsers.containsKey(normalizedEmail)) {
@@ -356,23 +357,23 @@ fun DecisionistaApp() {
             saveOracleCount(context, userEmail, oracleConsultationsCount)
         }
     }
-    
-    val handleGuestLogin: () -> Unit = { 
+
+    val handleGuestLogin: () -> Unit = {
         userEmail = GUEST_USER_IDENTIFIER
-        oracleConsultationsCount = 0 
+        oracleConsultationsCount = 0
         clearLoggedInUser(context)
         currentScreen = Screen.HOME
         showSnackbarMessage("Accesso come ospite.")
     }
 
-    val handleLogout: () -> Unit = { 
+    val handleLogout: () -> Unit = {
         clearLoggedInUser(context)
         userEmail = ""
         decisions = listOf()
         currentOptions = listOf()
         selectedMethod = DecisionMethod.RANDOM
         currentDecisionResult = null
-        oracleConsultationsCount = 0 
+        oracleConsultationsCount = 0
         showLogoutDialog = false // AGGIUNTO: Chiude il dialogo dopo il logout effettivo
         navigateToInitialAuthScreen()
         showSnackbarMessage("Logout effettuato.")
@@ -392,7 +393,7 @@ fun DecisionistaApp() {
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) { 
+        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             if (showNavBar) {
                 val homeScreenUserName = if (userEmail == GUEST_USER_IDENTIFIER) {
                     "Ospite"
@@ -419,7 +420,7 @@ fun DecisionistaApp() {
                     onSoundEnabledChange = { soundEnabled = it },
                     vibrationsEnabledActual = vibrationsEnabled,
                     onVibrationsEnabledChange = { vibrationsEnabled = it },
-                    showLogoutDialogActual = showLogoutDialog, 
+                    showLogoutDialogActual = showLogoutDialog,
                     onShowLogoutDialogChange = { showLogoutDialog = it },
                     onStartDecision = {
                         currentOptions = listOf()
@@ -456,7 +457,7 @@ fun DecisionistaApp() {
                         currentScreen = newScreen
                     },
                     onLoginAttempt = handleAttemptToLogin,
-                    onRegisterAttempt = handleAttemptToRegister, 
+                    onRegisterAttempt = handleAttemptToRegister,
                     onGuestLogin = handleGuestLogin,
                     onNavigateToInitialAuth = navigateToInitialAuthScreen
                 )
@@ -492,7 +493,7 @@ private fun MainScreensContainer(
 ) {
     when (currentScreen) {
         Screen.HOME -> HomeScreen(
-            userName = homeScreenUserName, 
+            userName = homeScreenUserName,
             decisionsMadeCount = decisions.size,
             oracleConsultationsCount = oracleConsultationsCount,
             recentDecisions = decisions.takeLast(3).reversed(),
@@ -508,10 +509,10 @@ private fun MainScreensContainer(
         Screen.ORACLE -> OracleScreen(
             onBack = onBackFromSubScreen,
             onNavigateToResult = onNavigateToResult,
-            onOracleConsulted = onOracleConsulted 
+            onOracleConsulted = onOracleConsulted
         )
         Screen.PROFILE -> {
-            val profileDisplayName = if (userEmail == GUEST_USER_IDENTIFIER) "Ospite" 
+            val profileDisplayName = if (userEmail == GUEST_USER_IDENTIFIER) "Ospite"
                                      else registeredUsers[userEmail]?.magicName ?: userEmail.substringBefore("@")
             ProfileScreen(
                 userEmail = userEmail,
@@ -555,7 +556,7 @@ private fun NonMainScreensContainer(
 ) {
     when (currentScreen) {
         Screen.SPLASH -> SplashScreen {
-             if (currentScreen == Screen.SPLASH) { 
+             if (currentScreen == Screen.SPLASH) {
                 onNavigateToInitialAuth()
             }
         }
@@ -565,8 +566,8 @@ private fun NonMainScreensContainer(
             onGuest = onGuestLogin
         )
         Screen.REGISTER -> RegisterScreen(
-            onRegister = { emailVal, passwordVal, confirmPasswordVal, magicNameVal -> 
-                onRegisterAttempt(emailVal, passwordVal, confirmPasswordVal, magicNameVal) 
+            onRegister = { emailVal, passwordVal, confirmPasswordVal, magicNameVal ->
+                onRegisterAttempt(emailVal, passwordVal, confirmPasswordVal, magicNameVal)
             },
             onBack = { onNavigate(Screen.LOGIN) }
         )

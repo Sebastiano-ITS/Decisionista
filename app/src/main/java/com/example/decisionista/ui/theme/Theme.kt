@@ -1,9 +1,14 @@
 package com.example.decisionista.ui.theme
 
 import android.app.Activity
+import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
-// import androidx.compose.material3.lightColorScheme // Can be added if a light theme variant is needed
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
@@ -46,20 +51,19 @@ private val AppDarkColorScheme = darkColorScheme(
     scrim = ScrimColor
 )
 
-/*
-// Placeholder for a potential Light Theme if designed later
-private val AppLightColorScheme = lightColorScheme(
-    primary = PrimaryBlue, // Example: Use the blue as primary for light theme
-    onPrimary = OnPrimaryColor,
-    primaryContainer = Color(0xFFE0E0FF), // Example: light blue container
-    onPrimaryContainer = Color(0xFF1E3A8A),
-    // ... define all other colors for the light theme ...
-    background = Color(0xFFF9FAFB), // Example: Light gray background
-    onBackground = Color(0xFF111827),
-    surface = Color(0xFFFFFFFF), // Example: White surface
-    onSurface = Color(0xFF111827)
+private val DarkColors = darkColorScheme(
+    primary = Indigo500,
+    onPrimary = White,
+    secondary = Green600,
+    onSecondary = White,
+    tertiary = Purple600,
+    background = Gray900,
+    onBackground = Gray100,
+    surface = Gray800,
+    onSurface = Gray100,
+    error = Red100,
+    onError = Black
 )
-*/
 
 @Composable
 fun DecisionistaAppTheme(
@@ -74,6 +78,7 @@ fun DecisionistaAppTheme(
         AppDarkColorScheme // Defaulting to dark for now even if useDarkTheme is false, until light is defined
     }
 
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -87,7 +92,7 @@ fun DecisionistaAppTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = AppTypography, // Typography will be updated next
+        typography = Typography, // Typography.kt (puoi definire titoli, body ecc.)
         content = content
     )
 }
