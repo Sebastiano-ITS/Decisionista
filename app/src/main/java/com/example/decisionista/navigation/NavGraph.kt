@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.decisionista.app.ui.SplashScreen
+import com.decisionista.app.ui.screens.AuthScreen
 import com.example.decisionista.ui.screens.*
 
 @Composable
