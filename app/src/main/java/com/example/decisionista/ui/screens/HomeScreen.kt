@@ -23,17 +23,23 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
-import com.example.decisionista.R
 import com.example.decisionista.ui.theme.DecisionistaTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.decisionista.ui.MainViewModel
 
 @Composable
-fun HomeScreen(navController: NavHostController) {
+fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
     val DarkBlue = Color(0xFF261D5A)
     val MediumBlue = Color(0xFF322870)
     val LightBlue = Color(0xFF5E5497)
     val GradientPurple = Brush.linearGradient(
         colors = listOf(Color(0xFF8A2BE2), Color(0xFF4B0082))
     )
+    val currentUser by mainViewModel.currentUser.collectAsState()
+
+    val userName = currentUser?.email?.substringBefore('@') ?: "ospite"
 
     Column(
         modifier = Modifier
@@ -72,7 +78,7 @@ fun HomeScreen(navController: NavHostController) {
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Benvenuto, mario",
+                text = "Benvenuto, $userName",
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
@@ -217,13 +223,5 @@ fun ActivityRow(label: String, time: String, icon: androidx.compose.ui.graphics.
             Text(text = label, fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Text(text = time, fontSize = 12.sp, color = Color.Gray)
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    DecisionistaTheme {
-        HomeScreen(rememberNavController())
     }
 }

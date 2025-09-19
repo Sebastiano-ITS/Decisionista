@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,7 +30,6 @@ import com.example.decisionista.ui.screens.*
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.decisionista.app.ui.SplashScreen
 import com.decisionista.app.ui.screens.AuthScreen
-import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {

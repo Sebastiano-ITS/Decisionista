@@ -75,9 +75,19 @@ fun AuthScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                 onClick = {
                     isLoading = true
                     if (email.isNotBlank() && password.isNotBlank()) {
-                        mainViewModel.login(email)
-                        navController.navigate("home") {
-                            popUpTo("auth") { inclusive = true }
+                        // Semplice logica per il login e la registrazione
+                        if (isLoginMode) {
+                            // Simulazione del login
+                            mainViewModel.login(email)
+                            Toast.makeText(context, "Login effettuato.", Toast.LENGTH_SHORT).show()
+                            navController.navigate("home") {
+                                popUpTo("auth") { inclusive = true }
+                            }
+                        } else {
+                            // Simulazione della registrazione
+                            mainViewModel.register(email)
+                            Toast.makeText(context, "Registrazione effettuata. Accedi ora.", Toast.LENGTH_LONG).show()
+                            isLoginMode = true // Torna alla schermata di login
                         }
                     } else {
                         Toast.makeText(context, "Inserisci email e password.", Toast.LENGTH_SHORT).show()
