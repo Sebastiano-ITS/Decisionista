@@ -105,6 +105,13 @@ fun MyApp() {
             composable(Screen.Glimmerio.route) { GlimmerioScreen(navController = navController) }
             composable(Screen.Oracolo.route) { OracoloScreen(navController = navController) }
             composable(Screen.Profile.route) { ProfileScreen(navController = navController) }
+            composable("inserisci-opzioni") { InsertOptionsScreen(navController = navController) }
+            composable("scegli-metodo") { ChooseMethodScreen(navController = navController) }
+            composable("random-method") { RandomMethodScreen(navController = navController) }
+            composable("progressive-elimination-method") { ProgressiveEliminationScreen(navController = navController) }
+            composable("duel-method") { DuelMethodScreen(navController = navController) }
+            composable("wheel-method") { WheelMethodScreen(navController = navController) }
+            composable("weighted-method") { WeightedMethodScreen(navController = navController) }
         }
     }
 }

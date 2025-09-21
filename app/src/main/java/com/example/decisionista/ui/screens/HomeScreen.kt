@@ -21,13 +21,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import com.example.decisionista.ui.theme.DecisionistaTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.decisionista.ui.MainViewModel
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
@@ -38,15 +37,131 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
         colors = listOf(Color(0xFF8A2BE2), Color(0xFF4B0082))
     )
     val currentUser by mainViewModel.currentUser.collectAsState()
+    val decisionCount by mainViewModel.decisionCount.collectAsState()
 
     val userName = currentUser?.email?.substringBefore('@') ?: "ospite"
 
-    Column(
+    val scrollState = rememberScrollState()
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.White)
     ) {
-        // Sezione Header
+        // Contenuto scrollabile
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 180.dp) // Spazio per l'header fisso
+                .verticalScroll(scrollState)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Widget "Punto di Partenza"
+                Spacer(modifier = Modifier.height(32.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE9E5F2))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Placeholder per l'immagine centrale
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .background(
+                                    brush = GradientPurple,
+                                    shape = RoundedCornerShape(50.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Play",
+                                tint = Color.White,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Punto di Partenza",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = "Lascia che ti guidiamo verso la scelta giusta. Ogni decisione è un passo verso il tuo futuro.",
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = { navController.navigate("inserisci-opzioni") },
+                            modifier = Modifier
+                                .fillMaxWidth(0.8f)
+                                .height(50.dp),
+                            shape = RoundedCornerShape(25.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
+                        ) {
+                            Text("Inizia Decisione", color = Color.White, fontSize = 18.sp)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    DecisionStatsCard(label = "Decisioni Prese", value = decisionCount.toString())
+                    DecisionStatsCard(label = "Consulti Oracolo", value = "8")
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Attività Recente",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Elenco attività recenti
+                ActivityRow(
+                    label = "Scelta carriera",
+                    time = "2 ore fa",
+                    icon = Icons.Outlined.CheckCircle
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                ActivityRow(
+                    label = "Consulto Oracolo",
+                    time = "1 giorno fa",
+                    icon = Icons.Outlined.Circle
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                ActivityRow(
+                    label = "Decisioni importanti",
+                    time = "3 giorni fa",
+                    icon = Icons.Outlined.CheckCircle
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                ActivityRow(
+                    label = "Scelta vestiti",
+                    time = "1 settimana fa",
+                    icon = Icons.Outlined.CheckCircle
+                )
+            }
+        }
+
+        // Header fisso
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -88,100 +203,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 16.sp
             )
-        }
-
-        // Corpo della pagina
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Widget "Punto di Partenza"
-            Spacer(modifier = Modifier.height(32.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFE9E5F2))
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Placeholder per l'immagine centrale
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .background(
-                                brush = GradientPurple,
-                                shape = RoundedCornerShape(50.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Play",
-                            tint = Color.White,
-                            modifier = Modifier.size(48.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Punto di Partenza",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-                    Text(
-                        text = "Lascia che ti guidiamo verso la scelta giusta. Ogni decisione è un passo verso il tuo futuro.",
-                        fontSize = 14.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = { /* TODO: Implementa l'azione */ },
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .height(50.dp),
-                        shape = RoundedCornerShape(25.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF673AB7))
-                    ) {
-                        Text("Inizia Decisione", color = Color.White, fontSize = 18.sp)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                DecisionStatsCard(label = "Decisioni Prese", value = "12")
-                DecisionStatsCard(label = "Consulti Oracolo", value = "8")
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Attività Recente",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth()
-            )
             Spacer(modifier = Modifier.height(16.dp))
-            // Elenco attività recenti
-            ActivityRow(
-                label = "Scelta carriera",
-                time = "2 ore fa",
-                icon = Icons.Outlined.CheckCircle
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            ActivityRow(
-                label = "Consulto Oracolo",
-                time = "1 giorno fa",
-                icon = Icons.Outlined.Circle
-            )
         }
     }
 }

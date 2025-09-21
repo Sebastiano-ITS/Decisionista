@@ -15,6 +15,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
+    private val _decisionCount = MutableStateFlow(0)
+    val decisionCount: StateFlow<Int> = _decisionCount.asStateFlow()
+
+    private val _optionsList = MutableStateFlow<List<String>>(emptyList())
+    val optionsList: StateFlow<List<String>> = _optionsList.asStateFlow()
+
     private val sharedPrefs = SharedPreferencesManager(application)
 
     init {
@@ -45,4 +51,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             sharedPrefs.clearLoggedInUserEmail()
         }
     }
+
+    fun incrementDecisionCount() {
+        _decisionCount.value += 1
+    }
+
+    fun setOptions(options: List<String>) {
+        _optionsList.value = options
+    }
+
+
 }
