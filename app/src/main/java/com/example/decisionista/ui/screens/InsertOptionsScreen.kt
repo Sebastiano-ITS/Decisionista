@@ -4,7 +4,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -26,14 +26,19 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun InsertOptionsScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
-    var options by remember { mutableStateOf(listOf("Pizza Margherita", "Sushi", "Hamburger")) }
+    // Ora usiamo lo stato del ViewModel per la lista delle opzioni
+    val options by mainViewModel.optionsList.collectAsState()
     var newOptionText by remember { mutableStateOf("") }
     val isButtonEnabled = options.size >= 2
+
+    // Stato per il riordino
+    val haptics = LocalHapticFeedback.current
     var draggingItemIndex by remember { mutableStateOf<Int?>(null) }
     var overItemIndex by remember { mutableStateOf<Int?>(null) }
 
@@ -81,9 +86,24 @@ fun InsertOptionsScreen(navController: NavHostController, mainViewModel: MainVie
                                     .animateItemPlacement(tween(500))
                                     .fillMaxWidth(),
                                 option = option,
-                                onDelete = { options = options.filter { it != option } },
-                                onDragStart = { draggingItemIndex = index },
-                                onDragEnd = { draggingItemIndex = null; overItemIndex = null },
+                                onDelete = {
+                                    val newOptions = options.filter { it != option }
+                                    mainViewModel.setOptions(newOptions)
+                                },
+                                onDragStart = {
+                                    draggingItemIndex = index
+                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                },
+                                onDragEnd = {
+                                    if (draggingItemIndex != null && overItemIndex != null && draggingItemIndex != overItemIndex) {
+                                        val mutableOptions = options.toMutableList()
+                                        val draggingOption = mutableOptions.removeAt(draggingItemIndex!!)
+                                        mutableOptions.add(overItemIndex!!, draggingOption)
+                                        mainViewModel.setOptions(mutableOptions.toList())
+                                    }
+                                    draggingItemIndex = null
+                                    overItemIndex = null
+                                },
                                 onDragOver = { overItemIndex = index },
                                 isDragging = index == draggingItemIndex,
                                 isOver = index == overItemIndex && index != draggingItemIndex
@@ -112,7 +132,7 @@ fun InsertOptionsScreen(navController: NavHostController, mainViewModel: MainVie
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(onClick = {
                             if (newOptionText.isNotBlank()) {
-                                options = options + newOptionText
+                                mainViewModel.setOptions(options + newOptionText)
                                 newOptionText = ""
                             }
                         }) {
