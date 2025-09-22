@@ -41,7 +41,7 @@ data class DecisionMethod(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChooseMethodScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
+fun ChooseMethodScreen(navController: NavHostController, mainViewModel: MainViewModel) {
     var selectedMethod by remember { mutableStateOf<DecisionMethod?>(null) }
     val methods = listOf(
         DecisionMethod("Casuale", "Scelta completamente random", Icons.Default.Casino, Color(0xFF2196F3), "random-method"),

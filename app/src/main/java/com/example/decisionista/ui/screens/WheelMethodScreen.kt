@@ -31,7 +31,7 @@ import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WheelMethodScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
+fun WheelMethodScreen(navController: NavHostController, mainViewModel: MainViewModel) {
     val options by mainViewModel.optionsList.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var targetRotation by remember { mutableStateOf(0f) }
@@ -127,9 +127,12 @@ fun WheelMethodScreen(navController: NavHostController, mainViewModel: MainViewM
                             // Calcola l'opzione vincente
                             val normalizedRotation = (360 - (targetRotation % 360)) % 360
                             val winningIndex = (normalizedRotation / (360f / options.size)).toInt()
-                            resultOption = options[winningIndex]
+                            val chosen = options[winningIndex]
+                            resultOption = chosen
 
+                            // Aggiorna contatore e attività recenti
                             mainViewModel.incrementDecisionCount()
+                            mainViewModel.addRecentActivity("Scelta ruota: $chosen")
                         }
                     },
                     modifier = Modifier

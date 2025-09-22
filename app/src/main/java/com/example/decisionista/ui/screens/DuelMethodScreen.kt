@@ -68,13 +68,18 @@ fun DuelMethodScreen(navController: NavHostController, mainViewModel: MainViewMo
 
                     Spacer(modifier = Modifier.height(32.dp))
 
+                    // Bottone per option1
                     Button(
                         onClick = {
                             duelOptions.remove(option2)
                             if (duelOptions.size == 1) {
-                                val winningOption = duelOptions.first()
-                                mainViewModel.setFinalDecision(winningOption)
+                                val chosen = duelOptions.first()
+                                mainViewModel.setFinalDecision(chosen)
+
+                                // Aggiorna contatore e attività recente
                                 mainViewModel.incrementDecisionCount()
+                                mainViewModel.addRecentActivity("Scelta duello: $chosen")
+
                                 navController.navigate("risultato")
                             }
                         },
@@ -94,13 +99,18 @@ fun DuelMethodScreen(navController: NavHostController, mainViewModel: MainViewMo
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Bottone per option2
                     Button(
                         onClick = {
                             duelOptions.remove(option1)
                             if (duelOptions.size == 1) {
-                                val winningOption = duelOptions.first()
-                                mainViewModel.setFinalDecision(winningOption)
+                                val chosen = duelOptions.first()
+                                mainViewModel.setFinalDecision(chosen)
+
+                                // Aggiorna contatore e attività recente
                                 mainViewModel.incrementDecisionCount()
+                                mainViewModel.addRecentActivity("Scelta duello: $chosen")
+
                                 navController.navigate("risultato")
                             }
                         },
@@ -114,8 +124,13 @@ fun DuelMethodScreen(navController: NavHostController, mainViewModel: MainViewMo
                         Text(option2, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     }
                 } else if (duelOptions.size == 1) {
-                    mainViewModel.setFinalDecision(duelOptions.first())
+                    val chosen = duelOptions.first()
+                    mainViewModel.setFinalDecision(chosen)
+
+                    // Aggiorna contatore e attività recente
                     mainViewModel.incrementDecisionCount()
+                    mainViewModel.addRecentActivity("Scelta duello: $chosen")
+
                     navController.navigate("risultato")
                 }
             }

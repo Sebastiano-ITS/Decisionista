@@ -68,9 +68,7 @@ fun WeightedMethodScreen(navController: NavHostController, mainViewModel: MainVi
                         WeightedOptionItem(
                             option = option,
                             score = scores[option] ?: 0,
-                            onScoreChange = { newScore ->
-                                scores[option] = newScore
-                            }
+                            onScoreChange = { newScore -> scores[option] = newScore }
                         )
                     }
                 }
@@ -78,18 +76,31 @@ fun WeightedMethodScreen(navController: NavHostController, mainViewModel: MainVi
                 Button(
                     onClick = {
                         val maxScore = scores.values.maxOrNull()
-                        winningOption = scores.filter { it.value == maxScore }.keys.firstOrNull()
-                        mainViewModel.incrementDecisionCount()
+                        val chosen = scores.filter { it.value == maxScore }.keys.firstOrNull()
+                        winningOption = chosen
+
+                        // Aggiorna contatore e attività recente
+                        chosen?.let {
+                            mainViewModel.incrementDecisionCount()
+                            mainViewModel.addRecentActivity("Scelta ponderata: $it")
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
                         .padding(horizontal = 16.dp),
                     shape = RoundedCornerShape(25.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = if (allOptionsScored) Color(0xFF4CAF50) else Color.Gray),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (allOptionsScored) Color(0xFF4CAF50) else Color.Gray
+                    ),
                     enabled = allOptionsScored
                 ) {
-                    Text("Prendi la decisione", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Prendi la decisione",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             } else {
                 Text(

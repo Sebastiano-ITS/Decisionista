@@ -31,7 +31,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun InsertOptionsScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
+fun InsertOptionsScreen(navController: NavHostController, mainViewModel: MainViewModel) {
     // Ora usiamo lo stato del ViewModel per la lista delle opzioni
     val options by mainViewModel.optionsList.collectAsState()
     var newOptionText by remember { mutableStateOf("") }
