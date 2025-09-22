@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
 data class User(val email: String)
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -21,10 +22,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _optionsList = MutableStateFlow<List<String>>(emptyList())
     val optionsList: StateFlow<List<String>> = _optionsList.asStateFlow()
 
+    private val _finalDecision = MutableStateFlow<String?>(null)
+    val finalDecision: StateFlow<String?> = _finalDecision.asStateFlow()
+
+    // Usiamo SharedPreferencesManager per gestire l'utente loggato
     private val sharedPrefs = SharedPreferencesManager(application)
 
     init {
-        // Carica l'utente loggato all'avvio del ViewModel
         viewModelScope.launch {
             val email = sharedPrefs.getLoggedInUserEmail()
             if (email != null) {
@@ -35,7 +39,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun register(email: String) {
         // Logica di registrazione
-        // In un'app reale, qui salveresti l'utente su un database
     }
 
     fun login(email: String) {
@@ -60,5 +63,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _optionsList.value = options
     }
 
+    // Nuova funzione per impostare la decisione finale
+    fun setFinalDecision(decision: String) {
+        _finalDecision.value = decision
+    }
 
+    // Funzione per resettare la decisione (opzionale, utile se vuoi ricominciare)
+    fun clearFinalDecision() {
+        _finalDecision.value = null
+    }
 }
