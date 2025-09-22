@@ -5,13 +5,14 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
 import com.google.crypto.tink.Aead
-import com.google.crypto.tink.CleartextKeysetHandle
-import com.google.crypto.tink.JsonKeysetReader
-import com.google.crypto.tink.JsonKeysetWriter
+// import com.google.crypto.tink.CleartextKeysetHandle // Non sembra usato, lo commento per pulizia
+// import com.google.crypto.tink.JsonKeysetReader // Non sembra usato
+// import com.google.crypto.tink.JsonKeysetWriter // Non sembra usato
 import com.google.crypto.tink.KeysetHandle
+import com.google.crypto.tink.aead.AeadConfig // <-- IMPORT AGGIUNTO/VERIFICATO
 import com.google.crypto.tink.aead.AeadKeyTemplates
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
-import com.google.crypto.tink.integration.android.AndroidKeystoreKmsClient
+// import com.google.crypto.tink.integration.android.AndroidKeystoreKmsClient // Non sembra usato
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -33,13 +34,17 @@ object CryptoManager {
     @Synchronized
     fun initialize(context: Context) {
         if (aead != null) {
+            Log.i(TAG, "Tink AEAD already initialized.")
             return
         }
         try {
-            // AeadConfig.register() // Dovrebbe essere chiamato una volta, es. in Application.onCreate()
+            // PRIMO PASSO FONDAMENTALE: Registra i tipi di chiave AEAD
+            AeadConfig.register() // <------------------- RIGA AGGIUNTA
+            Log.i(TAG, "AeadConfig registered successfully.")
+
             // Inizializza o carica il keyset di Tink, protetto da Android Keystore.
             val keysetHandle = AndroidKeysetManager.Builder()
-                .withSharedPref(context, KEYSET_NAME, PREFERENCE_FILE)
+                .withSharedPref(context.applicationContext, KEYSET_NAME, PREFERENCE_FILE) // Usare applicationContext per sicurezza
                 .withKeyTemplate(AeadKeyTemplates.AES256_GCM) // Template per nuove chiavi
                 .withMasterKeyUri("${ANDROID_KEYSTORE_KMS_URI_PREFIX}${MASTER_KEY_ALIAS}")
                 .build()
@@ -49,8 +54,6 @@ object CryptoManager {
             Log.i(TAG, "Tink AEAD initialized successfully.")
         } catch (e: GeneralSecurityException) {
             Log.e(TAG, "Error initializing Tink AEAD", e)
-            // Gestisci l'eccezione in modo appropriato per la tua app
-            // Potrebbe essere un errore fatale se la crittografia è essenziale
             throw RuntimeException("Failed to initialize Tink", e)
         } catch (e: IOException) {
             Log.e(TAG, "Error initializing Tink AEAD (IOException)", e)
@@ -68,7 +71,7 @@ object CryptoManager {
     fun encrypt(context: Context, plaintext: String, associatedData: ByteArray? = null): ByteArray? {
         return try {
             val plaintextBytes = plaintext.toByteArray(StandardCharsets.UTF_8)
-            getAead(context).encrypt(plaintextBytes, associatedData)
+            getAead(context.applicationContext).encrypt(plaintextBytes, associatedData) // Usare applicationContext
         } catch (e: GeneralSecurityException) {
             Log.e(TAG, "Encryption failed", e)
             null
@@ -80,7 +83,7 @@ object CryptoManager {
 
     fun decrypt(context: Context, ciphertext: ByteArray, associatedData: ByteArray? = null): String? {
         return try {
-            val decryptedBytes = getAead(context).decrypt(ciphertext, associatedData)
+            val decryptedBytes = getAead(context.applicationContext).decrypt(ciphertext, associatedData) // Usare applicationContext
             String(decryptedBytes, StandardCharsets.UTF_8)
         } catch (e: GeneralSecurityException) {
             Log.e(TAG, "Decryption failed", e)

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -94,7 +95,7 @@ fun HomeScreen(
     ) {
         // Welcome Message
         Text(
-            text = "Saluti, Nobile ${userName.substringBefore("@")}!",
+            text = userName, // USA DIRETTAMENTE IL PARAMETRO userName
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
@@ -147,19 +148,13 @@ fun HomeScreen(
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 12.dp, top = 16.dp)
         )
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp) // Spazio tra i due quadrati
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                StatItem("🔮 Decisioni Plasmate:", decisionsMadeCount.toString())
-                Spacer(modifier = Modifier.height(12.dp))
-                StatItem("📜 Oracoli Consultati:", "$oracleConsultationsCount (prossimamente)")
-            }
+            DecisionStatsCard(label = "🔮 Decisioni Plasmate", value = decisionsMadeCount.toString(), modifier = Modifier.weight(1f))
+            DecisionStatsCard(label = "📜 Oracoli Consultati", value = "$oracleConsultationsCount", modifier = Modifier.weight(1f))
         }
 
         // Recent Activity Section
@@ -275,6 +270,31 @@ fun RecentDecisionItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
+        }
+    }
+}
+
+@Composable
+fun DecisionStatsCard(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .aspectRatio(1f) // Per fare in modo che sia un quadrato
+            .padding(vertical = 4.dp), // Adjusted padding
+        shape = RoundedCornerShape(12.dp), // Slightly smaller radius
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Reduced elevation
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), // Adjusted padding
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center // Centra il contenuto orizzontalmente
+
+        ) {
+            StatItem(label = label, value = value)
         }
     }
 }

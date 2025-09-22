@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person // Icona per Nome Magico (sostituisce Star)
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -21,10 +21,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults // Added this import
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-// import androidx.compose.material3.TextFieldDefaults // Removed this as OutlinedTextFieldDefaults is used
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -44,26 +43,25 @@ import com.example.decisionista.ui.theme.PrimaryPurple
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onRegister: (String) -> Unit,
+    onRegister: (email: String, password: String, confirmPassword: String, magicName: String) -> Unit,
     onBack: () -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var magicName by remember { mutableStateOf("") } // Stato per il Nome Magico
     var passwordError by remember { mutableStateOf(false) }
 
     val isFormValid by remember {
         derivedStateOf {
-            name.isNotBlank() &&
-            email.isNotBlank() && // TODO: Add basic email format validation if desired
+            email.isNotBlank() &&
             password.isNotBlank() &&
             confirmPassword.isNotBlank() &&
-            password == confirmPassword
+            password == confirmPassword &&
+            magicName.isNotBlank()
         }
     }
 
-    // Validate passwords whenever they change
     LaunchedEffect(password, confirmPassword) {
         passwordError = password != confirmPassword && confirmPassword.isNotEmpty()
     }
@@ -152,14 +150,15 @@ fun RegisterScreen(
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
+                // CAMPO "NOME MAGICO" con icona Person
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
+                    value = magicName,
+                    onValueChange = { magicName = it },
                     label = { Text("Nome Magico") },
-                    leadingIcon = { Icon(Icons.Default.Face, null) },
+                    leadingIcon = { Icon(Icons.Filled.Person, contentDescription = "Nome Magico") }, // Icona modificata
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp), // Reduced bottom padding
+                        .padding(bottom = 8.dp),
                     colors = textFieldColors,
                     singleLine = true
                 )
@@ -175,7 +174,6 @@ fun RegisterScreen(
                         .padding(bottom = 8.dp),
                     colors = textFieldColors,
                     singleLine = true
-                    // TODO: Add isError for email format validation if desired
                 )
                 Spacer(Modifier.height(8.dp))
 
@@ -203,7 +201,7 @@ fun RegisterScreen(
                     label = { Text("Conferma Password Magica") },
                     leadingIcon = { Icon(Icons.Default.Lock, null) },
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(), // Removed bottom padding to use Spacer
+                    modifier = Modifier.fillMaxWidth(),
                     colors = textFieldColors,
                     singleLine = true,
                     isError = passwordError,
@@ -217,15 +215,15 @@ fun RegisterScreen(
                         }
                     }
                 )
-                Spacer(Modifier.height(24.dp)) // Spacer after confirm password
+                Spacer(Modifier.height(24.dp))
 
                 Button(
-                    onClick = { 
-                        if (isFormValid) { 
-                            onRegister(email) // Or pass other details like name, password if needed
+                    onClick = {
+                        if (isFormValid) {
+                            onRegister(email, password, confirmPassword, magicName)
                         }
                     },
-                    enabled = isFormValid, // Button enabled based on form validity
+                    enabled = isFormValid,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
@@ -240,7 +238,7 @@ fun RegisterScreen(
                 }
 
                 TextButton(onClick = onBack) {
-                    Text("← Torna al Login", color = MaterialTheme.colorScheme.secondary)
+                    Text("← Torna Indietro", color = MaterialTheme.colorScheme.secondary)
                 }
             }
         }

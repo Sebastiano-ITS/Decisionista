@@ -42,12 +42,12 @@ import com.example.decisionista.ui.theme.PrimaryPurple // For accent color
 @OptIn(ExperimentalMaterial3Api::class) // Opt-in for experimental Material 3 APIs
 @Composable
 fun LoginScreen(
-    onLogin: (String) -> Unit,
+    onLogin: (email: String, pazzword: String) -> Unit, // MODIFIED SIGNATURE
     onRegister: () -> Unit,
     onGuest: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") } // This was already present
 
     Box(
         modifier = Modifier
@@ -96,7 +96,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    colors = OutlinedTextFieldDefaults.colors( // Changed to OutlinedTextFieldDefaults.colors
+                    colors = OutlinedTextFieldDefaults.colors( 
                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                         focusedContainerColor = Color.Transparent,
@@ -122,7 +122,7 @@ fun LoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
-                    colors = OutlinedTextFieldDefaults.colors( // Changed to OutlinedTextFieldDefaults.colors
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                         focusedContainerColor = Color.Transparent,
@@ -140,7 +140,7 @@ fun LoginScreen(
                 )
 
                 Button(
-                    onClick = { onLogin(email) },
+                    onClick = { onLogin(email, password) }, // MODIFIED CALL
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)

@@ -34,10 +34,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+// Rimossi: import androidx.compose.runtime.getValue
+// Rimossi: import androidx.compose.runtime.mutableStateOf
+// Rimossi: import androidx.compose.runtime.remember
+// Rimossi: import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -49,17 +49,23 @@ import com.example.decisionista.model.SavedDecision // Keep for future use if ne
 @Composable
 fun ProfileScreen(
     userEmail: String,
+    magicName: String, // NUOVO: Nome magico dell'utente
     onLogout: () -> Unit,
     onBack: () -> Unit,
-    decisions: List<SavedDecision>, // Kept for API consistency, not used in current layout
+    decisions: List<SavedDecision>, // Kept for API consistency
     onNavigateToResult: (SavedDecision) -> Unit, // Kept for API consistency
+    // NUOVI parametri per gli switch
+    isDarkModeActual: Boolean,
+    onDarkModeChange: (Boolean) -> Unit,
+    soundEnabledActual: Boolean,
+    onSoundEnabledChange: (Boolean) -> Unit,
+    vibrationsEnabledActual: Boolean,
+    onVibrationsEnabledChange: (Boolean) -> Unit,
+    showLogoutDialog: Boolean, // NUOVO: per controllare il dialogo da MainActivity
+    onShowLogoutDialogChange: (Boolean) -> Unit, // NUOVO: per cambiare lo stato del dialogo
     modifier: Modifier = Modifier
 ) {
-    var showLogoutDialog by remember { mutableStateOf(false) }
-    // Local states for switches - actual theme/sound logic is external
-    var isDarkMode by remember { mutableStateOf(false) } // Example state
-    var soundEnabled by remember { mutableStateOf(true) }
-    var vibrationsEnabled by remember { mutableStateOf(true) }
+    // Rimossi gli stati locali per gli switch e showLogoutDialog, ora gestiti da MainActivity
 
     Scaffold(
         topBar = {
@@ -71,9 +77,9 @@ fun ProfileScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface, // Updated
-                    titleContentColor = MaterialTheme.colorScheme.primary, // Updated
-                    navigationIconContentColor = MaterialTheme.colorScheme.primary // Updated
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         },
@@ -83,10 +89,9 @@ fun ProfileScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 8.dp) // Adjusted padding
-                .verticalScroll(rememberScrollState()) // Added scroll for potentially long settings
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            // User Info Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -100,18 +105,20 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "🧙", // Wizard emoji
+                        text = "🧙",
                         fontSize = 40.sp,
                         modifier = Modifier.padding(end = 16.dp)
                     )
                     Column {
                         Text(
-                            text = "Benvenuto, Nobile Decisore!",
+                            // MODIFICATO: Saluto personalizzato con magicName se disponibile
+                            text = if (magicName.isNotBlank() && magicName != "Ospite") "Benvenuto, Nobile $magicName!" else "Benvenuto, Nobile Decisore!",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        if (userEmail.isNotBlank()) {
+                        // L'email viene visualizzata come prima
+                        if (userEmail.isNotBlank() && userEmail != "Ospite") { // Non mostrare "Ospite" come email
                             Text(
                                 text = userEmail,
                                 style = MaterialTheme.typography.bodyMedium,
@@ -136,8 +143,8 @@ fun ProfileScreen(
                 title = "Modalità Notte Stellata",
                 subtitle = "Abilita il tema scuro cosmico",
                 isSwitch = true,
-                switchValue = isDarkMode,
-                onSwitchChange = { isDarkMode = it } // Note: This only changes local UI state
+                switchValue = isDarkModeActual, // MODIFICATO
+                onSwitchChange = onDarkModeChange // MODIFICATO
             )
 
             SettingsItem(
@@ -145,8 +152,8 @@ fun ProfileScreen(
                 title = "Sussurri Ancestrali",
                 subtitle = "Attiva gli effetti sonori",
                 isSwitch = true,
-                switchValue = soundEnabled,
-                onSwitchChange = { soundEnabled = it }
+                switchValue = soundEnabledActual, // MODIFICATO
+                onSwitchChange = onSoundEnabledChange // MODIFICATO
             )
 
             SettingsItem(
@@ -154,8 +161,8 @@ fun ProfileScreen(
                 title = "Aure Mistiche",
                 subtitle = "Feedback con vibrazione",
                 isSwitch = true,
-                switchValue = vibrationsEnabled,
-                onSwitchChange = { vibrationsEnabled = it }
+                switchValue = vibrationsEnabledActual, // MODIFICATO
+                onSwitchChange = onVibrationsEnabledChange // MODIFICATO
             )
 
             SettingsItem(
@@ -179,10 +186,10 @@ fun ProfileScreen(
                 onClick = { /* TODO: Navigate to Privacy Policy screen */ }
             )
 
-            Spacer(modifier = Modifier.height(24.dp)) // Spacer before logout button
+            Spacer(modifier = Modifier.height(24.dp))
 
             FilledTonalButton(
-                onClick = { showLogoutDialog = true },
+                onClick = { onShowLogoutDialogChange(true) }, // MODIFICATO
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -196,13 +203,13 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text("Logout", style = MaterialTheme.typography.titleMedium)
             }
-            Spacer(modifier = Modifier.height(16.dp)) // Bottom spacer
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
-    if (showLogoutDialog) {
+    if (showLogoutDialog) { // MODIFICATO: usa il parametro
         AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
+            onDismissRequest = { onShowLogoutDialogChange(false) }, // MODIFICATO
             shape = RoundedCornerShape(16.dp),
             containerColor = MaterialTheme.colorScheme.surface,
             title = { Text("Conferma Fuga", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall) },
@@ -211,7 +218,7 @@ fun ProfileScreen(
                 TextButton(
                     onClick = {
                         onLogout()
-                        showLogoutDialog = false
+                        onShowLogoutDialogChange(false) // MODIFICATO
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
@@ -220,7 +227,7 @@ fun ProfileScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showLogoutDialog = false },
+                    onClick = { onShowLogoutDialogChange(false) }, // MODIFICATO
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("Resta")
@@ -233,16 +240,16 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsItem(
-    icon: String, // Emoji or could be ImageVector
+    icon: String,
     title: String,
     subtitle: String,
     isSwitch: Boolean = false,
     switchValue: Boolean = false,
     onSwitchChange: (Boolean) -> Unit = {},
-    onClick: (() -> Unit)? = null // Made onClick nullable
+    onClick: (() -> Unit)? = null
 ) {
     Card(
-        onClick = if (isSwitch || onClick == null) { {} } else { onClick }, // Clickable only if not switch and onClick is provided
+        onClick = if (isSwitch || onClick == null) { {} } else { onClick },
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 12.dp),
@@ -262,7 +269,7 @@ fun SettingsItem(
                     text = icon,
                     fontSize = 26.sp,
                     modifier = Modifier.padding(end = 16.dp),
-                    color = MaterialTheme.colorScheme.secondary // Thematic color for icon
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 Column {
                     Text(
