@@ -72,11 +72,17 @@ fun ProgressiveEliminationScreen(navController: NavHostController, mainViewModel
                     items(remainingOptions) { option ->
                         Button(
                             onClick = {
-                                remainingOptions.remove(option)
+                                // Crea una nuova lista senza l'opzione cliccata
+                                remainingOptions = remainingOptions.filter { it != option }.toMutableList()
+
                                 if (remainingOptions.size == 1) {
                                     val winningOption = remainingOptions.first()
                                     mainViewModel.setFinalDecision(winningOption)
+
+                                    // Aggiorna contatore e aggiungi attività recente
                                     mainViewModel.incrementDecisionCount()
+                                    mainViewModel.addRecentActivity("Eliminazione progressiva: $winningOption")
+
                                     navController.navigate("risultato")
                                 }
                             },

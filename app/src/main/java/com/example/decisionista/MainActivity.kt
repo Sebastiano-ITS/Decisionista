@@ -1,6 +1,5 @@
 package com.example.decisionista
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,16 +27,17 @@ import androidx.navigation.compose.rememberNavController
 import com.example.decisionista.ui.MainViewModel
 import com.example.decisionista.ui.screens.*
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.decisionista.app.ui.SplashScreen
-import com.decisionista.app.ui.screens.AuthScreen
 import kotlinx.coroutines.delay
+import androidx.compose.runtime.LaunchedEffect
+import com.decisionista.app.ui.SplashScreen
+import com.decisionista.app.ui.AuthScreen
+
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Aggiungi qui il tuo tema
             MaterialTheme {
                 MyApp()
             }
@@ -96,22 +96,43 @@ fun MyApp() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = if (currentUser != null) "home" else "splash",
+            // La navigazione inizia sempre dalla splash screen
+            startDestination = "splash",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("splash") { SplashScreen(navController) }
-            composable("auth") { AuthScreen(navController = navController) }
-            composable(Screen.Home.route) { HomeScreen(navController = navController) }
-            composable(Screen.Glimmerio.route) { GlimmerioScreen(navController = navController) }
-            composable(Screen.Oracolo.route) { OracoloScreen(navController = navController) }
+            // Logica di navigazione dalla splash screen
+            composable("splash") {
+                // Avvia la navigazione dopo un breve ritardo
+                LaunchedEffect(Unit) {
+                    delay(2000) // Ritardo di 2 secondi per visualizzare la splash screen
+                    // Controlla lo stato dell'utente e naviga di conseguenza
+                    if (currentUser != null) {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("auth") {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+                }
+                // Chiamata corretta a SplashScreen()
+                SplashScreen(navController = navController)
+            }
+            // Chiamata corretta a AuthScreen()
+            composable("auth") { AuthScreen(navController = navController, mainViewModel = mainViewModel) }
+            composable(Screen.Home.route) { HomeScreen(navController ,  mainViewModel) }
+            composable(Screen.Glimmerio.route) { GlimmerioScreen(navController,  mainViewModel) }
+            composable(Screen.Oracolo.route) { OracoloScreen(navController,  mainViewModel) }
             composable(Screen.Profile.route) { ProfileScreen(navController = navController) }
-            composable("inserisci-opzioni") { InsertOptionsScreen(navController = navController) }
-            composable("scegli-metodo") { ChooseMethodScreen(navController = navController) }
-            composable("random-method") { RandomMethodScreen(navController = navController) }
-            composable("progressive-elimination-method") { ProgressiveEliminationScreen(navController = navController) }
-            composable("duel-method") { DuelMethodScreen(navController = navController) }
-            composable("wheel-method") { WheelMethodScreen(navController = navController) }
-            composable("weighted-method") { WeightedMethodScreen(navController = navController) }
+
+            composable("inserisci-opzioni") { InsertOptionsScreen(navController,  mainViewModel) }
+            composable("scegli-metodo") { ChooseMethodScreen(navController,  mainViewModel) }
+            composable("random-method") { RandomMethodScreen(navController,  mainViewModel) }
+            composable("progressive-elimination-method") { ProgressiveEliminationScreen(navController, mainViewModel) }
+            composable("duel-method") { DuelMethodScreen(navController, mainViewModel) }
+            composable("wheel-method") { WheelMethodScreen(navController,  mainViewModel) }
+            composable("weighted-method") { WeightedMethodScreen(navController,  mainViewModel) }
         }
     }
 }

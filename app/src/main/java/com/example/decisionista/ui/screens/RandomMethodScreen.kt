@@ -14,14 +14,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.decisionista.ui.MainViewModel
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RandomMethodScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
+fun RandomMethodScreen(navController: NavHostController, mainViewModel: MainViewModel) {
     // Leggi le opzioni dal ViewModel
     val options by mainViewModel.optionsList.collectAsState()
     var winningOption by remember { mutableStateOf<String?>(null) }
@@ -67,9 +66,16 @@ fun RandomMethodScreen(navController: NavHostController, mainViewModel: MainView
 
                 Button(
                     onClick = {
+                        // Scegli random
                         val randomIndex = Random.nextInt(options.size)
-                        winningOption = options[randomIndex]
+                        val chosen = options[randomIndex]
+                        winningOption = chosen
+
+                        // Aggiorna contatore
                         mainViewModel.incrementDecisionCount()
+
+                        // Aggiungi attività recente
+                        mainViewModel.addRecentActivity("Scelta casuale: $chosen")
                     },
                     modifier = Modifier
                         .fillMaxWidth()

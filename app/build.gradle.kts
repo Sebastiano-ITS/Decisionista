@@ -44,6 +44,10 @@ dependencies {
     // Dipendenze per Jetpack Compose Material 3
     implementation(libs.material3)
     implementation(libs.androidx.material3.window.size.class1)
+    implementation (libs.gson)
+    implementation (libs.androidx.material3.v120)
+    implementation (libs.androidx.material3.v111)
+
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material.icons.extended)

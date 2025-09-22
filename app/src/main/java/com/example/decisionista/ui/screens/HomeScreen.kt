@@ -6,27 +6,26 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Circle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.decisionista.ui.MainViewModel
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.decisionista.ui.MainViewModel
 
 @Composable
 fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
@@ -36,11 +35,13 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
     val GradientPurple = Brush.linearGradient(
         colors = listOf(Color(0xFF8A2BE2), Color(0xFF4B0082))
     )
+
     val currentUser by mainViewModel.currentUser.collectAsState()
     val decisionCount by mainViewModel.decisionCount.collectAsState()
+    // Assicura che MainViewModel contenga recentActivities: StateFlow<List<RecentActivity>>
+    val recentActivities by mainViewModel.recentActivities.collectAsState()
 
     val userName = currentUser?.email?.substringBefore('@') ?: "ospite"
-
     val scrollState = rememberScrollState()
 
     Box(
@@ -61,7 +62,6 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Widget "Punto di Partenza"
                 Spacer(modifier = Modifier.height(32.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -72,7 +72,6 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                         modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Placeholder per l'immagine centrale
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
@@ -83,7 +82,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.PlayArrow,
+                                imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = "Play",
                                 tint = Color.White,
                                 modifier = Modifier.size(48.dp)
@@ -134,30 +133,21 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                // Elenco attività recenti
-                ActivityRow(
-                    label = "Scelta carriera",
-                    time = "2 ore fa",
-                    icon = Icons.Outlined.CheckCircle
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                ActivityRow(
-                    label = "Consulto Oracolo",
-                    time = "1 giorno fa",
-                    icon = Icons.Outlined.Circle
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                ActivityRow(
-                    label = "Decisioni importanti",
-                    time = "3 giorni fa",
-                    icon = Icons.Outlined.CheckCircle
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                ActivityRow(
-                    label = "Scelta vestiti",
-                    time = "1 settimana fa",
-                    icon = Icons.Outlined.CheckCircle
-                )
+
+                if (recentActivities.isEmpty()) {
+                    Text("Nessuna attività recente", color = Color.Gray)
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        recentActivities.forEach { activity ->
+                            ActivityRow(
+                                label = activity.label,
+                                time = activity.time,
+                                icon = Icons.Outlined.CheckCircle
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                    }
+                }
             }
         }
 
@@ -226,7 +216,7 @@ fun DecisionStatsCard(label: String, value: String) {
 }
 
 @Composable
-fun ActivityRow(label: String, time: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+fun ActivityRow(label: String, time: String, icon: ImageVector) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
