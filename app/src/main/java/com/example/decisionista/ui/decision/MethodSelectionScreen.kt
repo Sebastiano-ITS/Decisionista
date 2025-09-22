@@ -1,21 +1,28 @@
 package com.example.decisionista.ui.decision
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.rememberRipple // Changed import
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack // Changed import
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,12 +34,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.decisionista.model.DecisionMethod // Import DecisionMethod model
+import com.example.decisionista.model.DecisionMethod
+import com.example.decisionista.ui.theme.PrimaryBlue
+import com.example.decisionista.ui.theme.PrimaryPurple
+import com.example.decisionista.ui.theme.SecondaryYellow // Assuming SecondaryYellow is your accent for glow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,16 +63,17 @@ fun MethodSelectionScreen(
                 title = { Text("Scegli il Metodo Magico") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro") // Changed icon
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -67,18 +83,16 @@ fun MethodSelectionScreen(
         ) {
             Text(
                 text = "🪄 Come vuoi che il mago decida?",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 24.dp)
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 24.dp, top = 8.dp)
             )
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(DecisionMethod.values()) { method ->
+                items(DecisionMethod.entries.toTypedArray()) { method -> // Changed to entries
                     MethodCard(
                         method = method,
                         isSelected = selectedMethod == method,
@@ -87,23 +101,42 @@ fun MethodSelectionScreen(
                 }
             }
 
-            Button(
-                onClick = onLaunch,
+            val buttonShape = RoundedCornerShape(12.dp)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    .height(56.dp)
+                    .padding(top = 24.dp, bottom = 8.dp)
+                    .shadow(elevation = 4.dp, shape = buttonShape)
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(PrimaryPurple, PrimaryBlue)
+                        ),
+                        shape = buttonShape
+                    )
+                    .clip(buttonShape)
+                    .clickable { onLaunch() },
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "✨ Lancia la Decisione Magica ✨",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.AutoAwesome,
+                        contentDescription = "Lancia Decisione Icon",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Lancia la Decisione Magica",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
         }
     }
@@ -116,57 +149,81 @@ fun MethodCard(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val cardShape = RoundedCornerShape(16.dp)
+    // Removed unused interactionSource
+
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = if (isSelected) 8.dp else 2.dp,
+                shape = cardShape
+            )
+            .clip(cardShape),
+        shape = cardShape,
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
+                Color.Transparent
             else
                 MaterialTheme.colorScheme.surfaceVariant
         ),
         border = if (isSelected)
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        else null,
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 4.dp else 1.dp
-        )
+            BorderStroke(2.dp, SecondaryYellow)
+        else
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .then(
+                    if (isSelected) {
+                        Modifier.background(
+                            brush = Brush.horizontalGradient(colors = listOf(PrimaryPurple, PrimaryBlue)),
+                            shape = cardShape
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
         ) {
-            Text(
-                text = method.emoji,
-                fontSize = 32.sp,
-                modifier = Modifier.padding(end = 16.dp)
-            )
-
-            Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = method.title,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                    text = method.emoji,
+                    fontSize = 36.sp,
+                    modifier = Modifier.padding(end = 16.dp),
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Text(
-                    text = method.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = (if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant).copy(alpha = 0.7f),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
 
-            if (isSelected) {
-                Icon(
-                    Icons.Default.CheckCircle,
-                    contentDescription = "Metodo Selezionato",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = method.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = method.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = (if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant).copy(alpha = 0.8f),
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+                }
+
+                if (isSelected) {
+                    Icon(
+                        Icons.Default.CheckCircle, // This is fine, not deprecated like ArrowBack
+                        contentDescription = "Metodo Selezionato",
+                        tint = SecondaryYellow,
+                        modifier = Modifier.size(28.dp).padding(start = 8.dp)
+                    )
+                }
             }
         }
     }

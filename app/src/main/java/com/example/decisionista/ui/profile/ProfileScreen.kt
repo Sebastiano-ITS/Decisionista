@@ -1,22 +1,28 @@
 package com.example.decisionista.ui.profile
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.decisionista.model.SavedDecision
+import com.example.decisionista.model.SavedDecision // Keep for future use if needed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,43 +51,47 @@ fun ProfileScreen(
     userEmail: String,
     onLogout: () -> Unit,
     onBack: () -> Unit,
-    decisions: List<SavedDecision>,
-    onNavigateToResult: (SavedDecision) -> Unit,
-    modifier: Modifier
+    decisions: List<SavedDecision>, // Kept for API consistency, not used in current layout
+    onNavigateToResult: (SavedDecision) -> Unit, // Kept for API consistency
+    modifier: Modifier = Modifier
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
-    var isDarkMode by remember { mutableStateOf(false) } // This state is local, actual theme change is more complex
+    // Local states for switches - actual theme/sound logic is external
+    var isDarkMode by remember { mutableStateOf(false) } // Example state
     var soundEnabled by remember { mutableStateOf(true) }
     var vibrationsEnabled by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("👤 Profilo") },
+                title = { Text("👤 Profilo Utente") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface, // Updated
+                    titleContentColor = MaterialTheme.colorScheme.primary, // Updated
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary // Updated
                 )
             )
         },
-        containerColor = MaterialTheme.colorScheme.background // Set background for the content area
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp) // Adjusted padding
+                .verticalScroll(rememberScrollState()) // Added scroll for potentially long settings
         ) {
+            // User Info Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
+                    .padding(vertical = 16.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
@@ -90,23 +100,22 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "🧙‍♂️", // Wizard emoji
-                        fontSize = 50.sp, // Slightly smaller emoji
-                        modifier = Modifier.padding(end = 20.dp)
+                        text = "🧙", // Wizard emoji
+                        fontSize = 40.sp,
+                        modifier = Modifier.padding(end = 16.dp)
                     )
                     Column {
                         Text(
-                            text = "Benvenuto, Decisore!",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold
-                            ),
+                            text = "Benvenuto, Nobile Decisore!",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        if (userEmail.isNotEmpty()) {
+                        if (userEmail.isNotBlank()) {
                             Text(
                                 text = userEmail,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                                 modifier = Modifier.padding(top = 4.dp)
                             )
                         }
@@ -115,27 +124,26 @@ fun ProfileScreen(
             }
 
             Text(
-                text = "⚙️ Impostazioni",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold
-                ),
+                text = "⚙️ Impostazioni Incantate",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 12.dp, top = 16.dp)
             )
 
             SettingsItem(
                 icon = "🎨",
-                title = "Modalità Scura",
-                subtitle = "Attiva il tema scuro",
+                title = "Modalità Notte Stellata",
+                subtitle = "Abilita il tema scuro cosmico",
                 isSwitch = true,
                 switchValue = isDarkMode,
-                onSwitchChange = { isDarkMode = it } // Note: This only changes local state, not app theme
+                onSwitchChange = { isDarkMode = it } // Note: This only changes local UI state
             )
 
             SettingsItem(
                 icon = "🔊",
-                title = "Suoni",
-                subtitle = "Effetti sonori magici",
+                title = "Sussurri Ancestrali",
+                subtitle = "Attiva gli effetti sonori",
                 isSwitch = true,
                 switchValue = soundEnabled,
                 onSwitchChange = { soundEnabled = it }
@@ -143,59 +151,79 @@ fun ProfileScreen(
 
             SettingsItem(
                 icon = "📳",
-                title = "Vibrazioni",
-                subtitle = "Feedback tattile",
+                title = "Aure Mistiche",
+                subtitle = "Feedback con vibrazione",
                 isSwitch = true,
                 switchValue = vibrationsEnabled,
                 onSwitchChange = { vibrationsEnabled = it }
             )
 
             SettingsItem(
-                icon = "🧙‍♂️",
-                title = "Personalizza Mago",
-                subtitle = "Cambia aspetto del tuo mago",
-                onClick = { /* TODO: Implementare personalizzazione */ }
+                icon = "👤",
+                title = "Personalizza Avatar Magico",
+                subtitle = "Modifica l'aspetto del tuo alter ego",
+                onClick = { /* TODO: Implement avatar customization screen */ }
+            )
+            
+            SettingsItem(
+                icon = "📜",
+                title = "Termini dell'Arcano",
+                subtitle = "Leggi i patti e le condizioni",
+                onClick = { /* TODO: Navigate to Terms & Conditions screen */ }
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            SettingsItem(
+                icon = "🔒",
+                title = "Privacy Mistica",
+                subtitle = "Gestisci le tue preferenze",
+                onClick = { /* TODO: Navigate to Privacy Policy screen */ }
+            )
 
-            Button(
+            Spacer(modifier = Modifier.height(24.dp)) // Spacer before logout button
+
+            FilledTonalButton(
                 onClick = { showLogoutDialog = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
                 )
             ) {
-                Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Logout")
+                Icon(Icons.Filled.Logout, contentDescription = "Logout Icon")
+                Spacer(modifier = Modifier.width(12.dp))
+                Text("Logout", style = MaterialTheme.typography.titleMedium)
             }
+            Spacer(modifier = Modifier.height(16.dp)) // Bottom spacer
         }
     }
 
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Logout", color = MaterialTheme.colorScheme.onSurface) },
-            text = { Text("Sei sicuro di voler uscire dal regno magico?", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text("Conferma Fuga", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall) },
+            text = { Text("Sei certo di voler abbandonare queste terre incantate? Le tue gesta rimarranno leggenda.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium) },
             confirmButton = {
-                Button(
+                TextButton(
                     onClick = {
                         onLogout()
                         showLogoutDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Logout")
+                    Text("Sì, Fuggi")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Annulla", color = MaterialTheme.colorScheme.primary)
+                TextButton(
+                    onClick = { showLogoutDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Resta")
                 }
             }
         )
@@ -205,49 +233,53 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsItem(
-    icon: String,
+    icon: String, // Emoji or could be ImageVector
     title: String,
     subtitle: String,
     isSwitch: Boolean = false,
     switchValue: Boolean = false,
     onSwitchChange: (Boolean) -> Unit = {},
-    onClick: () -> Unit = {}
+    onClick: (() -> Unit)? = null // Made onClick nullable
 ) {
     Card(
-        onClick = if (!isSwitch) onClick else { { /* No action for switch card click */ } },
+        onClick = if (isSwitch || onClick == null) { {} } else { onClick }, // Clickable only if not switch and onClick is provided
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp),
+            .padding(bottom = 12.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = icon,
-                fontSize = 24.sp,
-                modifier = Modifier.padding(end = 16.dp)
-            )
-
-            Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = icon,
+                    fontSize = 26.sp,
+                    modifier = Modifier.padding(end = 16.dp),
+                    color = MaterialTheme.colorScheme.secondary // Thematic color for icon
                 )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
             }
-
+            Spacer(modifier = Modifier.width(8.dp))
             if (isSwitch) {
                 Switch(
                     checked = switchValue,
@@ -256,14 +288,16 @@ fun SettingsItem(
                         checkedThumbColor = MaterialTheme.colorScheme.primary,
                         checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                         uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant // Or onSurface.copy(alpha = ContentAlpha.disabled)
+                        uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                        checkedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                     )
                 )
-            } else {
+            } else if (onClick != null) {
                 Icon(
                     Icons.Default.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    contentDescription = "Vai a $title",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }

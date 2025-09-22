@@ -1,18 +1,28 @@
 package com.example.decisionista.ui.decision
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlaylistAddCheck
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,35 +42,75 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.decisionista.model.OptionData // Import OptionData
+import com.example.decisionista.ui.theme.PrimaryBlue
+import com.example.decisionista.ui.theme.PrimaryPurple
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OptionsInputScreen(
-    options: List<String>,
-    onOptionsChange: (List<String>) -> Unit,
+    options: List<OptionData>, // Changed to List<OptionData>
+    onOptionsChange: (List<OptionData>) -> Unit, // Changed to List<OptionData>
     onNext: () -> Unit,
     onBack: () -> Unit
 ) {
-    var newOption by remember { mutableStateOf("") }
+    var newOptionText by remember { mutableStateOf("") }
+    var newOptionWeightInput by remember { mutableStateOf("1") } // Input for weight, default 1
+
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+        disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        errorTextColor = MaterialTheme.colorScheme.error,
+        focusedContainerColor = Color.Transparent,
+        unfocusedContainerColor = Color.Transparent,
+        disabledContainerColor = Color.Transparent,
+        errorContainerColor = Color.Transparent,
+        cursorColor = PrimaryPurple,
+        errorCursorColor = MaterialTheme.colorScheme.error,
+        focusedBorderColor = PrimaryPurple,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+        disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
+        errorBorderColor = MaterialTheme.colorScheme.error,
+        focusedLeadingIconColor = PrimaryPurple,
+        unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+        errorLeadingIconColor = MaterialTheme.colorScheme.error,
+        focusedTrailingIconColor = PrimaryPurple,
+        unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+        errorTrailingIconColor = MaterialTheme.colorScheme.error,
+        focusedLabelColor = PrimaryPurple,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.77f),
+        errorLabelColor = MaterialTheme.colorScheme.error
+    )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inserisci le Opzioni") }, // Text color will be inherited from TopAppBarDefaults
+                title = { Text("Scolpisci le Tue Opzioni") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -70,115 +121,200 @@ fun OptionsInputScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 20.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "🌟 Aggiungi le tue opzioni",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, // Text on surfaceVariant
+                        text = "✨ Definisci i Sentieri del Fato ✨",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         OutlinedTextField(
-                            value = newOption,
-                            onValueChange = { newOption = it },
-                            label = { Text("Nuova opzione") },
-                            modifier = Modifier.weight(1f)
+                            value = newOptionText,
+                            onValueChange = { newOptionText = it },
+                            label = { Text("Descrivi un'opzione...") },
+                            modifier = Modifier.weight(0.7f),
+                            colors = textFieldColors,
+                            singleLine = true
                         )
-
-                        Button(
-                            onClick = {
-                                if (newOption.isNotBlank()) {
-                                    onOptionsChange(options + newOption.trim())
-                                    newOption = ""
-                                }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedTextField(
+                            value = newOptionWeightInput,
+                            onValueChange = { newValue ->
+                                // Allow only digits, or empty for default
+                                newOptionWeightInput = newValue.filter { it.isDigit() }.take(2) // Max 2 digits for weight
                             },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary // Use secondary for actions
-                            )
-                        ) {
-                            Text("Aggiungi", color = MaterialTheme.colorScheme.onSecondary)
-                        }
+                            label = { Text("Peso") },
+                            modifier = Modifier.weight(0.3f),
+                            colors = textFieldColors,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true
+                        )
                     }
-                }
-            }
-
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                itemsIndexed(options) { index, option ->
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "${index + 1}.",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = MaterialTheme.colorScheme.primary, // Use primary for emphasis
-                                modifier = Modifier.padding(end = 12.dp)
-                            )
-
-                            Text(
-                                text = option,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface, // Text on surface
-                                modifier = Modifier.weight(1f)
-                            )
-
-                            IconButton(
-                                onClick = {
-                                    onOptionsChange(options.filterIndexed { i, _ -> i != index })
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Elimina",
-                                    tint = MaterialTheme.colorScheme.error // Use error color for delete
-                                )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    IconButton(
+                        onClick = {
+                            if (newOptionText.isNotBlank()) {
+                                val weight = newOptionWeightInput.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                                val newOption = OptionData(text = newOptionText.trim(), weight = weight)
+                                onOptionsChange(options + newOption)
+                                newOptionText = ""
+                                newOptionWeightInput = "1" // Reset weight input
                             }
-                        }
+                        },
+                        enabled = newOptionText.isNotBlank(),
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Icon(
+                            Icons.Filled.AddCircleOutline,
+                            contentDescription = "Aggiungi Opzione",
+                            tint = if (newOptionText.isNotBlank()) PrimaryPurple else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.size(36.dp)
+                        )
                     }
                 }
             }
 
-            Button(
-                onClick = onNext,
-                enabled = options.size >= 2,
+            if (options.isEmpty()) {
+                Column(
+                    modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Filled.PlaylistAddCheck,
+                        contentDescription = "Nessuna opzione",
+                        tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
+                        modifier = Modifier.size(72.dp).padding(bottom = 16.dp)
+                    )
+                    Text(
+                        text = "L'Oracolo attende le tue proposte.",
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    Text(
+                        text = "Forgia almeno due sentieri perché il destino possa scegliere.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    itemsIndexed(options) { index, optionData ->
+                        OptionItem(index = index, optionData = optionData, onRemove = {
+                            onOptionsChange(options.filterIndexed { i, _ -> i != index })
+                        })
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val buttonEnabled = options.size >= 2
+            val buttonShape = RoundedCornerShape(12.dp)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                    .height(56.dp)
+                    .padding(top = 8.dp)
+                    .shadow(
+                        elevation = if (buttonEnabled) 6.dp else 0.dp,
+                        shape = buttonShape,
+                        spotColor = PrimaryPurple
+                    )
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = if (buttonEnabled) listOf(PrimaryPurple, PrimaryBlue) else listOf(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+                        ),
+                        shape = buttonShape
+                    )
+                    .clip(buttonShape)
+                    .clickable(enabled = buttonEnabled) {
+                        if (buttonEnabled) {
+                            onNext()
+                        }
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Text("Avanti - Scegli il Metodo", color = MaterialTheme.colorScheme.onPrimary)
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Prosegui al Rituale",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (buttonEnabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Prosegui",
+                        tint = if (buttonEnabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    )
+                }
             }
 
-            if (options.size < 2) {
+            if (!buttonEnabled && options.isNotEmpty()) {
                 Text(
-                    text = "Servono almeno 2 opzioni per decidere!",
-                    color = MaterialTheme.colorScheme.error,
+                    text = "Servono almeno 2 opzioni per svelare il fato!",
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OptionItem(index: Int, optionData: OptionData, onRemove: () -> Unit) { // Changed to OptionData
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "${index + 1}. ${optionData.text}", // Display option text
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "Peso: ${optionData.weight}", // Display option weight
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 8.dp)
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            IconButton(onClick = onRemove) {
+                Icon(
+                    Icons.Filled.Close,
+                    contentDescription = "Rimuovi Opzione",
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
         }

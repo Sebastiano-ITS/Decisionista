@@ -5,27 +5,28 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Autorenew // Better icon for Retry
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Star // Assuming this was for Save, changed to Save icon
+import androidx.compose.material.icons.filled.HelpOutline // Icon for "Why"
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -46,135 +47,141 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.decisionista.model.DecisionMethod // Import DecisionMethod model
+import com.example.decisionista.model.DecisionMethod
+import com.example.decisionista.model.OptionData // Added import for OptionData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(
     result: String,
     method: DecisionMethod,
+    options: List<OptionData>, // Added options parameter
     onRetry: () -> Unit,
-    onSave: (String) -> Unit,
-    onHome: () -> Unit
+    onGoHome: () -> Unit // Changed from onSave and onHome
 ) {
     var showWhyDialog by remember { mutableStateOf(false) }
     val magicalReasons = listOf(
-        "Le stelle si sono allineate in modo perfetto per questa scelta",
-        "L'energia cosmica ha guidato la decisione verso questa opzione",
-        "Il vento del destino ha soffiato in questa direzione",
-        "Gli spiriti saggi hanno sussurrato questo nome",
-        "La magia antica ha rivelato questa verità nascosta",
-        "Il cristallo della saggezza ha brillato per questa scelta"
+        "Le stelle si sono allineate in modo perfetto per questa scelta.",
+        "L'energia cosmica ha guidato la decisione verso questa opzione.",
+        "Il vento del destino ha soffiato in questa direzione.",
+        "Gli spiriti saggi hanno sussurrato questo nome.",
+        "La magia antica ha rivelato questa verità nascosta.",
+        "Il cristallo della saggezza ha brillato per questa scelta.",
+        "Un sussurro arcano ha indicato la via.",
+        "Le rune del fato hanno composto questo verdetto."
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("✨ Decisione Magica ✨") },
+                title = { Text("✨ Il Destino Svelato ✨") },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background) // Use theme background
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceAround
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+            // Result Card
+            AnimatedVisibility(
+                visible = true,
+                enter = scaleIn(animationSpec = tween(800)) + fadeIn(animationSpec = tween(600))
             ) {
-                AnimatedVisibility(
-                    visible = true,
-                    enter = scaleIn(animationSpec = tween(1000)) + fadeIn()
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp,
+                        hoveredElevation = 12.dp)
                 ) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 32.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer // Use theme color
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    Column(
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(
-                            modifier = Modifier.padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = method.emoji, // Display method emoji
-                                fontSize = 60.sp,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-
-                            Text(
-                                text = "Il Mago ha Deciso:",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f), // Use theme color
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-
-                            Text(
-                                text = result,
-                                style = MaterialTheme.typography.headlineMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center
-                                ),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer // Use theme color
-                            )
-                        }
+                        Text(
+                            text = method.emoji,
+                            fontSize = 72.sp,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        Text(
+                            text = "Il Fato ha Decretato:",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                        Text(
+                            text = result,
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            lineHeight = 36.sp
+                        )
+                        // TODO: Consider displaying options here if relevant
+                        // options.forEach { option -> Text(option.text) }
                     }
                 }
+            }
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+            // Action Buttons Section
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Save Button REMOVED as saving is handled in RitualScreen
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    FilledTonalButton(
+                        onClick = onRetry,
+                        modifier = Modifier.weight(1f).height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     ) {
-                        Button(
-                            onClick = onRetry,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary // Use theme color
-                            )
-                        ) {
-                            Icon(Icons.Default.Refresh, contentDescription = "Riprova")
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Riprova", color = MaterialTheme.colorScheme.onSecondary) // Use theme color
-                        }
-
-                        Button(
-                            onClick = { onSave(result) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary // Use theme color
-                            )
-                        ) {
-                            Icon(Icons.Filled.Save, contentDescription = "Salva") // Changed to Save icon
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Salva", color = MaterialTheme.colorScheme.onPrimary) // Use theme color
-                        }
+                        Icon(Icons.Filled.Autorenew, contentDescription = "Riprova")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Riprova")
                     }
 
                     OutlinedButton(
                         onClick = { showWhyDialog = true },
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary) // Use theme color
+                        modifier = Modifier.weight(1f).height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary)
                     ) {
-                        Text("🔮 Perché questa scelta?", color = MaterialTheme.colorScheme.primary) // Use theme color
+                        Icon(Icons.Filled.HelpOutline, contentDescription = "Perché", tint = MaterialTheme.colorScheme.secondary)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Perché?", color = MaterialTheme.colorScheme.secondary)
                     }
+                }
 
-                    TextButton(onClick = onHome) {
-                        Icon(Icons.Default.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Torna alla Home", color = MaterialTheme.colorScheme.primary) // Use theme color
-                    }
+                TextButton(
+                    onClick = onGoHome, // Updated to use onGoHome
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Icon(Icons.Default.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Torna alla Home del Reame", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -183,37 +190,42 @@ fun ResultScreen(
     if (showWhyDialog) {
         AlertDialog(
             onDismissRequest = { showWhyDialog = false },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             title = {
                 Text(
-                    text = "🔮 Saggezza del Mago",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.primary // Use theme color
+                    text = "🔮 Segreti dell'Oracolo 🔮",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
             },
             text = {
                 Text(
                     text = magicalReasons.random(),
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontStyle = FontStyle.Italic
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface // Use theme color
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontStyle = FontStyle.Italic,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 22.sp
                 )
             },
             confirmButton = {
                 Button(
                     onClick = { showWhyDialog = false },
+                    shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary // Use theme color
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Capisco", color = MaterialTheme.colorScheme.onPrimary) // Use theme color
+                    Text("Comprendo", color = MaterialTheme.colorScheme.onPrimary)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showWhyDialog = false }) {
-                    Text("Annulla", color = MaterialTheme.colorScheme.primary) // Use theme color
+                TextButton(
+                    onClick = { showWhyDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Chiudi Portale")
                 }
             }
         )
