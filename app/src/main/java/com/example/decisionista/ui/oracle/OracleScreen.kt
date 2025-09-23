@@ -10,7 +10,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-// import androidx.compose.foundation.interaction.MutableInteractionSource // Commentato se non usato
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,10 +36,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect // AGGIUNTO
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf // AGGIUNTO
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,7 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext // AGGIUNTO
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -62,29 +61,29 @@ import com.example.decisionista.ui.theme.PrimaryPurple
 import com.example.decisionista.ui.theme.SecondaryBlue
 import kotlinx.coroutines.delay
 
-import android.content.Context // AGGIUNTO
-import android.hardware.Sensor // AGGIUNTO
-import android.hardware.SensorEvent // AGGIUNTO
-import android.hardware.SensorEventListener // AGGIUNTO
-import android.hardware.SensorManager // AGGIUNTO
-import kotlin.math.abs // AGGIUNTO
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import kotlin.math.abs
 
-// AGGIUNTO: Costanti per il rilevamento dello scuotimento
-private const val SHAKE_DETECTION_THRESHOLD = 800 // Valore soglia per la velocità di scuotimento (da regolare)
+// Costanti per il rilevamento dello scuotimento
+private const val SHAKE_DETECTION_THRESHOLD = 800 // Valore soglia per la velocità di scuotimento
 private const val MIN_TIME_BETWEEN_SHAKES_MS = 1000L // Minimo intervallo tra due scuotimenti validi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OracleScreen(
     onBack: () -> Unit,
-    onNavigateToResult: (SavedDecision) -> Unit, 
-    onOracleConsulted: () -> Unit, 
+    onNavigateToResult: (SavedDecision) -> Unit,
+    onOracleConsulted: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var currentProphecy by remember { mutableStateOf("") }
     var isGenerating by remember { mutableStateOf(false) }
 
-    // AGGIUNTO: Contesto e SensorManager per il rilevamento dello scuotimento
+    // Contesto e SensorManager per il rilevamento dello scuotimento
     val context = LocalContext.current
     val sensorManager = remember {
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -102,33 +101,33 @@ fun OracleScreen(
         "Una decisione coraggiosa aprirà porte mai immaginate.",
         "L'energia positiva che emani attrarrà ciò che desideri.",
         "Un piccolo gesto di gentilezza avrà grandi conseguenze.",
+        "Un stage arriverà per te..",
+        "La fortuna ti sorriderà se linux userai..",
+        "Per te arriverà un lavoro sicuro",
         "La risposta che cerchi si trova più vicina di quanto pensi.",
         "Il destino ha in serbo per te una sorpresa meravigliosa.",
         "La tua intuizione ti guiderà verso la scelta giusta."
     )
 
-    val generateProphecy = remember(isGenerating, prophecies, onOracleConsulted) { // Aggiunte dipendenze a remember
-        // per assicurare che la lambda catturi i valori più recenti se necessario,
-        // anche se in questo caso specifico potrebbe non essere strettamente critico
-        // data la natura di come viene usata.
-        { 
-            if (!isGenerating) { 
+    val generateProphecy = remember(isGenerating, prophecies, onOracleConsulted) {
+        {
+            if (!isGenerating) {
                 isGenerating = true
                 currentProphecy = prophecies.random()
                 onOracleConsulted()
             }
         }
     }
-    
+
     LaunchedEffect(isGenerating) {
         if (isGenerating) {
-            delay(2000) 
+            delay(2000)
             isGenerating = false
         }
     }
 
-    // AGGIUNTO: Logica per il rilevamento dello scuotimento
-    val shakeListener = remember(generateProphecy) { // generateProphecy come chiave per ricreare se cambia
+    // Logica per il rilevamento dello scuotimento
+    val shakeListener = remember(generateProphecy) {
         object : SensorEventListener {
             private var lastUpdate: Long = 0
             private var lastX: Float = 0f
@@ -138,7 +137,7 @@ fun OracleScreen(
             override fun onSensorChanged(event: SensorEvent?) {
                 if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
                     val currentTime = System.currentTimeMillis()
-                    if ((currentTime - lastUpdate) > 100) { 
+                    if ((currentTime - lastUpdate) > 100) {
                         val diffTime = (currentTime - lastUpdate)
                         lastUpdate = currentTime
 
@@ -151,10 +150,9 @@ fun OracleScreen(
                         if (speed > SHAKE_DETECTION_THRESHOLD) {
                             val now = System.currentTimeMillis()
                             if ((now - lastShakeTimestamp > MIN_TIME_BETWEEN_SHAKES_MS)) {
-                                // La chiamata a generateProphecy() gestirà internamente il flag isGenerating
                                 generateProphecy()
-                                if(!isGenerating) { // Controlla se generateProphecy ha settato isGenerating
-                                   lastShakeTimestamp = now // Aggiorna solo se la profezia è stata effettivamente generata
+                                if (!isGenerating) {
+                                    lastShakeTimestamp = now
                                 }
                             }
                         }
@@ -171,7 +169,7 @@ fun OracleScreen(
         }
     }
 
-    // AGGIUNTO: Registra e de-registra il listener del sensore
+    // Registra e de-registra il listener del sensore
     DisposableEffect(sensorManager, accelerometer, shakeListener) {
         sensorManager.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_UI)
         onDispose {
@@ -189,9 +187,9 @@ fun OracleScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface, 
-                    titleContentColor = MaterialTheme.colorScheme.primary, 
-                    navigationIconContentColor = MaterialTheme.colorScheme.primary 
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         },
@@ -208,21 +206,21 @@ fun OracleScreen(
                             SecondaryBlue.copy(alpha = 0.2f),
                             MaterialTheme.colorScheme.background
                         ),
-                        radius = 1000f 
+                        radius = 1000f
                     )
                 )
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 val infiniteTransition = rememberInfiniteTransition(label = "oracle_orb_scale")
                 val animatedScale by infiniteTransition.animateFloat(
                     initialValue = 1f,
-                    targetValue = 1.05f, 
+                    targetValue = 1.05f,
                     animationSpec = infiniteRepeatable(
                         animation = tween(2200),
                         repeatMode = RepeatMode.Reverse
@@ -244,7 +242,7 @@ fun OracleScreen(
                     style = MaterialTheme.typography.titleMedium,
                     fontStyle = FontStyle.Italic,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.secondary, 
+                    color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.padding(bottom = 32.dp)
                 )
 
@@ -259,7 +257,7 @@ fun OracleScreen(
                             .padding(horizontal = 16.dp, vertical = 24.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f) 
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
                         ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
@@ -272,7 +270,7 @@ fun OracleScreen(
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontStyle = FontStyle.Italic,
                                 textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant 
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -286,10 +284,10 @@ fun OracleScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp), 
+                            .padding(horizontal = 8.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer 
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
                         ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                     ) {
@@ -317,16 +315,24 @@ fun OracleScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.weight(1f)) 
-
+                Spacer(modifier = Modifier.weight(1f))
+            }
+            // Pulsante e testo spostati fuori dal Column principale
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter) // Allinea in basso
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Pulsante "Nuova Profezia"
                 val buttonShape = RoundedCornerShape(12.dp)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
-                        .padding(vertical = 16.dp) 
                         .shadow(
-                            elevation = if (isGenerating) 0.dp else 6.dp, 
+                            elevation = if (isGenerating) 0.dp else 6.dp,
                             shape = buttonShape,
                             spotColor = PrimaryPurple
                         )
@@ -361,7 +367,7 @@ fun OracleScreen(
                 }
 
                 Text(
-                    text = "(O scuoti il tuo artefatto per un responso!) ", 
+                    text = "(O scuoti il tuo artefatto per un responso!) ",
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),

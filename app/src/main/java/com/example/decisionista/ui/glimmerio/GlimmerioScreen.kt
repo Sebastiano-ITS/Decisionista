@@ -186,14 +186,7 @@ fun DecisionCard(
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Opzioni: ${decision.options.joinToString(", ")}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
+
             Text(
                 text = "Deciso il: ${formatTimestamp(decision.timestamp)}",
                 style = MaterialTheme.typography.bodySmall,

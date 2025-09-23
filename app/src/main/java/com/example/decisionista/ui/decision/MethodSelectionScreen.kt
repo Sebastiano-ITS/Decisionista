@@ -18,9 +18,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple // Changed import
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack // Changed import
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
@@ -47,7 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.example.decisionista.model.DecisionMethod
 import com.example.decisionista.ui.theme.PrimaryBlue
 import com.example.decisionista.ui.theme.PrimaryPurple
-import com.example.decisionista.ui.theme.SecondaryYellow // Assuming SecondaryYellow is your accent for glow
+import com.example.decisionista.ui.theme.SecondaryYellow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +63,7 @@ fun MethodSelectionScreen(
                 title = { Text("Scegli il Metodo Magico") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro") // Changed icon
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -92,7 +92,7 @@ fun MethodSelectionScreen(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(DecisionMethod.entries.toTypedArray()) { method -> // Changed to entries
+                items(DecisionMethod.entries.toTypedArray()) { method ->
                     MethodCard(
                         method = method,
                         isSelected = selectedMethod == method,
@@ -105,7 +105,7 @@ fun MethodSelectionScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .height(64.dp) // Aumentata l'altezza
                     .padding(top = 24.dp, bottom = 8.dp)
                     .shadow(elevation = 4.dp, shape = buttonShape)
                     .background(
@@ -128,10 +128,10 @@ fun MethodSelectionScreen(
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(24.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(34.dp)) // Aumentato lo spazio
                     Text(
                         text = "Lancia la Decisione Magica",
-                        style = MaterialTheme.typography.titleMedium.copy(
+                        style = MaterialTheme.typography.titleLarge.copy( // Aumentato lo stile del testo
                             fontWeight = FontWeight.Bold
                         ),
                         color = MaterialTheme.colorScheme.onPrimary
@@ -150,8 +150,6 @@ fun MethodCard(
     onClick: () -> Unit
 ) {
     val cardShape = RoundedCornerShape(16.dp)
-    // Removed unused interactionSource
-
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -218,7 +216,7 @@ fun MethodCard(
 
                 if (isSelected) {
                     Icon(
-                        Icons.Default.CheckCircle, // This is fine, not deprecated like ArrowBack
+                        Icons.Default.CheckCircle,
                         contentDescription = "Metodo Selezionato",
                         tint = SecondaryYellow,
                         modifier = Modifier.size(28.dp).padding(start = 8.dp)
