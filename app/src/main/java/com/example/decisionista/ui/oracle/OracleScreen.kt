@@ -68,6 +68,8 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.foundation.layout.Box
 import kotlin.math.abs
+import android.content.Intent
+import androidx.compose.material.icons.filled.Share
 
 // Costanti per il rilevamento dello scuotimento
 private const val SHAKE_DETECTION_THRESHOLD = 800 // Valore soglia per la velocità di scuotimento
@@ -98,11 +100,9 @@ fun OracleScreen(
         "La fortuna sorriderà a chi osa fare il primo passo.",
         "Non temere il futuro: se va male, c’è sempre un concorso pubblico da qualche parte.",
         "Un incontro inaspettato porterà nuove opportunità.",
-        "Incontrerai Sydney Sweeney",
         "La pazienza sarà la tua alleata più preziosa oggi.",
         "L'amore della tua vita arriverà",
         "Chi lascia la strada vecchia per la nuova.... rischia di trovarsi senza stipendio a fine mese.",
-        "Incontrerai Emma Watson",
         "L'energia positiva che emani attrarrà ciò che desideri.",
         "Un piccolo gesto di gentilezza avrà grandi conseguenze.",
         "Uno stage arriverà per te",
@@ -179,6 +179,17 @@ fun OracleScreen(
         onDispose {
             sensorManager.unregisterListener(shakeListener)
         }
+    }
+
+    // Funzione per condividere la profezia
+    val shareProphecy = { prophecy: String ->
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "La mia profezia dall'Oracolo Mistico: \n\n\"$prophecy\" \n \n By Decisionista App")
+            type = "text/plain"
+        }
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        context.startActivity(shareIntent)
     }
 
     Scaffold(
@@ -300,13 +311,29 @@ fun OracleScreen(
                             modifier = Modifier.padding(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
-                                text = "Profezia Svelata",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
-                                modifier = Modifier.padding(bottom = 12.dp)
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Profezia Svelata",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
+                                    modifier = Modifier.padding(bottom = 12.dp)
+                                )
+                                // Pulsante di condivisione
+                                if (currentProphecy.isNotEmpty() && !isGenerating) {
+                                    IconButton(onClick = { shareProphecy(currentProphecy) }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = "Condividi profezia",
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    }
+                                }
+                            }
                             Text(
                                 text = currentProphecy,
                                 style = MaterialTheme.typography.bodyLarge,
