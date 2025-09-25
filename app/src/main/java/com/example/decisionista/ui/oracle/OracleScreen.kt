@@ -10,8 +10,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -66,6 +66,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import androidx.compose.foundation.layout.Box
 import kotlin.math.abs
 
 // Costanti per il rilevamento dello scuotimento
@@ -76,14 +77,13 @@ private const val MIN_TIME_BETWEEN_SHAKES_MS = 1000L // Minimo intervallo tra du
 @Composable
 fun OracleScreen(
     onBack: () -> Unit,
-    onNavigateToResult: (SavedDecision) -> Unit,
+    onNavigateToResult: (SavedDecision) -> Unit, // Parametro non utilizzato, considerare rimozione se non serve
     onOracleConsulted: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var currentProphecy by remember { mutableStateOf("") }
     var isGenerating by remember { mutableStateOf(false) }
 
-    // Contesto e SensorManager per il rilevamento dello scuotimento
     val context = LocalContext.current
     val sensorManager = remember {
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -126,7 +126,6 @@ fun OracleScreen(
         }
     }
 
-    // Logica per il rilevamento dello scuotimento
     val shakeListener = remember(generateProphecy) {
         object : SensorEventListener {
             private var lastUpdate: Long = 0
@@ -151,7 +150,7 @@ fun OracleScreen(
                             val now = System.currentTimeMillis()
                             if ((now - lastShakeTimestamp > MIN_TIME_BETWEEN_SHAKES_MS)) {
                                 generateProphecy()
-                                if (!isGenerating) {
+                                if (!isGenerating) { // Aggiorna timestamp solo se la profezia è stata generata
                                     lastShakeTimestamp = now
                                 }
                             }
@@ -169,7 +168,6 @@ fun OracleScreen(
         }
     }
 
-    // Registra e de-registra il listener del sensore
     DisposableEffect(sensorManager, accelerometer, shakeListener) {
         sensorManager.registerListener(shakeListener, accelerometer, SensorManager.SENSOR_DELAY_UI)
         onDispose {
@@ -180,7 +178,7 @@ fun OracleScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("🔮 L'Oracolo Mistico") },
+                title = { Text("L'Oracolo Mistico") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
@@ -194,11 +192,11 @@ fun OracleScreen(
             )
         },
         containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-        Box(
-            modifier = modifier
+    ) { paddingValuesScaffold ->
+        Column(
+            modifier = modifier // Applicare il modifier passato qui
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValuesScaffold) // Applicare il padding dello Scaffold
                 .background(
                     Brush.radialGradient(
                         colors = listOf(
@@ -209,13 +207,14 @@ fun OracleScreen(
                         radius = 1000f
                     )
                 )
+                .padding(horizontal = 24.dp) // Padding orizzontale generale per lo schermo
         ) {
+            Spacer(Modifier.weight(1f)) // Spinge il contenuto principale verso il centro/basso
+
+            // Colonna per il contenuto principale centrato
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxWidth(), // Occupa la larghezza disponibile (già paddata dal genitore)
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val infiniteTransition = rememberInfiniteTransition(label = "oracle_orb_scale")
                 val animatedScale by infiniteTransition.animateFloat(
@@ -254,12 +253,12 @@ fun OracleScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 24.dp),
+                            .padding(horizontal = 16.dp, vertical = 24.dp), // Padding interno della card
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
                         ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) 4.dp else 0.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp),
@@ -284,19 +283,19 @@ fun OracleScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
+                            .padding(horizontal = 8.dp), // Padding interno della card
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
                         ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) 8.dp else 0.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "🌟 Profezia Svelata 🌟",
+                                text = "Profezia Svelata",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f),
@@ -314,18 +313,17 @@ fun OracleScreen(
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.weight(1f))
             }
-            // Pulsante e testo spostati fuori dal Column principale
+
+            Spacer(Modifier.weight(1f)) // Separa il contenuto principale dal pulsante in basso
+
+            // Colonna per il pulsante e testo per lo scuotimento (in basso)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.BottomCenter) // Allinea in basso
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .padding(vertical = 16.dp), // Padding verticale; orizzontale gestito dal genitore
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Pulsante "Nuova Profezia"
                 val buttonShape = RoundedCornerShape(12.dp)
                 Box(
                     modifier = Modifier

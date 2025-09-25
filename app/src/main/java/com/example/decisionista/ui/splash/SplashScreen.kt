@@ -1,6 +1,7 @@
 package com.example.decisionista.ui.splash
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -18,7 +19,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +30,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,29 +45,74 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
+// Nuova palette di colori fissi, ispirata all'app
+private val splashBackgroundStart = Color(0xFF2E0854) // Viola profondo scuro
+private val splashBackgroundEnd = Color(0xFF1A0430)   // Viola scurissimo/quasi nero
+private val splashIconColor = Color(0xFFFFEB3B)        // Giallo brillante (tipo SecondaryYellow)
+private val splashTitleColor = Color(0xFFD0A9F5)       // Viola chiaro e vibrante
+private val splashSubtitleColor = Color(0xFFADD8E6)    // Azzurro/Blu chiaro
+private val splashSparkleBaseColor1 = Color(0xFFFFEB3B) // Giallo per scintille
+private val splashSparkleBaseColor2 = Color(0xFFADD8E6) // Blu chiaro per scintille
+
 @Composable
 fun SplashScreen(onComplete: () -> Unit) {
     var isAnimating by remember { mutableStateOf(true) }
-    // val transition = rememberInfiniteTransition() // For sparkles that don't depend on isAnimating
 
     LaunchedEffect(Unit) {
-        delay(3000) // Duration of splash screen animations
+        delay(4000) // Aumentata durata per le nuove animazioni
         isAnimating = false
-        delay(500) // Duration for fade out before completing
+        delay(600) // Fade out
         onComplete()
     }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "splash_infinite_effects")
+    val localConfiguration = LocalConfiguration.current
+
+    // Animazioni per l'icona
+    val iconGlow by infiniteTransition.animateFloat(
+        initialValue = 15f, targetValue = 30f,
+        animationSpec = infiniteRepeatable(tween(1800), RepeatMode.Reverse),
+        label = "icon_glow"
+    )
+    val iconRotationY by infiniteTransition.animateFloat(
+        initialValue = -12f, targetValue = 12f,
+        animationSpec = infiniteRepeatable(tween(4000, easing = LinearEasing), RepeatMode.Reverse),
+        label = "icon_rotation_y"
+    )
+    val iconOffsetY by infiniteTransition.animateFloat(
+        initialValue = -10f, targetValue = 10f,
+        animationSpec = infiniteRepeatable(tween(2800, easing = LinearEasing), RepeatMode.Reverse),
+        label = "icon_offset_y"
+    )
+
+    // Animazione per l'effetto shimmer sul titolo
+    val shimmerTranslateAnim by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1.5f * localConfiguration.screenWidthDp.toFloat(), // Larghezza del gradiente
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "title_shimmer_translate"
+    )
+    val shimmerColors = listOf(
+        splashTitleColor.copy(alpha = 0.5f),
+        splashTitleColor.copy(alpha = 1.0f),
+        splashTitleColor.copy(alpha = 0.5f),
+    )
+    val titleBrush = Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(shimmerTranslateAnim - (0.5f * localConfiguration.screenWidthDp.toFloat()), 0f),
+        end = Offset(shimmerTranslateAnim, 0f)
+    )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 Brush.radialGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.secondary, // Center color
-                        MaterialTheme.colorScheme.primary,   // Middle color
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) // Outer color (darker primary)
-                    ),
-                    radius = 1000f // Adjust radius for desired spread
+                    colors = listOf(splashBackgroundStart, splashBackgroundEnd),
+                    radius = localConfiguration.screenHeightDp * 1.5f // Raggio ampio
                 )
             ),
         contentAlignment = Alignment.Center
@@ -70,68 +123,88 @@ fun SplashScreen(onComplete: () -> Unit) {
         ) {
             AnimatedVisibility(
                 visible = isAnimating,
-                enter = scaleIn(animationSpec = tween(1000)) + fadeIn(animationSpec = tween(1000)),
+                enter = scaleIn(animationSpec = tween(1500)) + fadeIn(animationSpec = tween(1500)),
                 exit = scaleOut(animationSpec = tween(500)) + fadeOut(animationSpec = tween(500))
             ) {
                 Text(
                     text = "🔮",
-                    fontSize = 80.sp,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    fontSize = 85.sp, // Leggermente più grande
+                    color = splashIconColor,
+                    modifier = Modifier
+                        .padding(bottom = 20.dp)
+                        .graphicsLayer(
+                            translationY = iconOffsetY,
+                            rotationY = iconRotationY
+                        )
+                        .shadow(
+                            elevation = iconGlow.dp,
+                            spotColor = splashIconColor,
+                            ambientColor = splashIconColor.copy(alpha = 0.6f),
+                            shape = CircleShape
+                        )
                 )
             }
 
             AnimatedVisibility(
                 visible = isAnimating,
-                enter = fadeIn(animationSpec = tween(1000, delayMillis = 500)),
+                enter = fadeIn(animationSpec = tween(1500, delayMillis = 500)),
                 exit = fadeOut(animationSpec = tween(500))
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "DECISIONISTA",
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimary // Use theme color
+                        style = TextStyle(
+                            fontFamily = FontFamily.SansSerif, // Scegli un font custom se disponibile
+                            fontWeight = FontWeight.ExtraBold, // Più impatto
+                            fontSize = 36.sp,
+                            letterSpacing = 3.5.sp, // Leggero aumento
+                            brush = titleBrush // Applicazione dello shimmer
+                           // Non impostare il colore qui quando usi il brush
+                        )
                     )
                     Text(
                         text = "Il Mago delle Decisioni",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontStyle = FontStyle.Italic
+                        style = TextStyle(
+                            fontFamily = FontFamily.Serif,
+                            fontStyle = FontStyle.Italic,
+                            fontSize = 19.sp,
+                            color = splashSubtitleColor,
                         ),
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f), // Use theme color
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 12.dp)
                     )
                 }
             }
         }
 
-        // Sparkles animation - using infinite transition for continuous effect while splash is visible
-        val infiniteTransition = rememberInfiniteTransition()
-        if (isAnimating) { // Only show sparkles during the initial animation phase
-            repeat(20) { index ->
-                val randomX = remember { (Random.nextFloat() - 0.5f) * 2 }
-                val randomY = remember { (Random.nextFloat() - 0.5f) * 2 }
+        // Scintille Cosmiche
+        if (isAnimating) {
+            repeat(30) { // Numero di scintille
+                val randomXFactor = remember { (Random.nextFloat() - 0.5f) * 2.5f }
+                val randomYFactor = remember { (Random.nextFloat() - 0.5f) * 2.5f }
                 val sparkleAlpha by infiniteTransition.animateFloat(
-                    initialValue = 0.2f,
-                    targetValue = 1f,
+                    initialValue = 0.1f,
+                    targetValue = 0.95f,
                     animationSpec = infiniteRepeatable(
-                        animation = tween(1000 + Random.nextInt(0, 500) + index * 100),
+                        animation = tween(1300 + Random.nextInt(0, 900) + it * 100),
                         repeatMode = RepeatMode.Reverse
-                    )
+                    ),
+                    label = "sparkle_alpha_enhanced_$it"
                 )
+                val sparkleSize = remember { (7 + Random.nextInt(0, 10)).sp }
+                val sparkleColor = if (Random.nextBoolean()) splashSparkleBaseColor1 else splashSparkleBaseColor2
 
                 Text(
-                    text = "✨",
-                    fontSize = (10 + Random.nextInt(0, 10)).sp,
-                    color = MaterialTheme.colorScheme.tertiary.copy(alpha = sparkleAlpha),
+                    text = listOf("✦", "✧", "✨", "◈", ".", "*").random(), // Caratteri per le scintille
+                    fontSize = sparkleSize,
+                    color = sparkleColor.copy(alpha = sparkleAlpha),
                     modifier = Modifier
-                        .fillMaxSize() // Fill the Box
-                        .wrapContentSize(Alignment.Center) // Center the sparkle text itself
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center)
                         .offset(
-                            x = (randomX * 150).dp, // Spread sparkles across a certain range
-                            y = (randomY * 300).dp
+                            x = (randomXFactor * (localConfiguration.screenWidthDp / 2.2f)).dp,
+                            y = (randomYFactor * (localConfiguration.screenHeightDp / 2.2f)).dp
                         )
+                        .alpha(if (Random.nextFloat() > 0.15f) sparkleAlpha else sparkleAlpha * 0.6f)
                 )
             }
         }

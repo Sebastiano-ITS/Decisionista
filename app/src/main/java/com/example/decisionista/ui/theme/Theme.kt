@@ -1,13 +1,8 @@
 package com.example.decisionista.ui.theme
 
 import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -18,23 +13,23 @@ import androidx.core.view.WindowCompat
 private val AppDarkColorScheme = darkColorScheme(
     primary = PrimaryPurple,
     onPrimary = OnPrimaryColor,
-    primaryContainer = PrimaryContainerPurple, // Often a lighter shade or for specific accents in dark theme
+    primaryContainer = PrimaryContainerPurple,
     onPrimaryContainer = OnPrimaryContainerPurple,
 
     secondary = SecondaryOrange,
     onSecondary = OnSecondaryColor,
-    secondaryContainer = SecondaryContainerYellow, // Often a lighter shade or for specific accents in dark theme
+    secondaryContainer = SecondaryContainerYellow,
     onSecondaryContainer = OnSecondaryContainerYellow,
 
-    tertiary = TertiaryAccent, // Mapped to InfoColor from Color.kt
+    tertiary = TertiaryAccent, // Questo è InfoColor per il tema scuro
     onTertiary = OnTertiaryAccent,
     tertiaryContainer = TertiaryAccentContainer,
     onTertiaryContainer = OnTertiaryAccentContainer,
 
     error = ErrorColor,
     onError = OnErrorColor,
-    errorContainer = ErrorContainerColor,
-    onErrorContainer = OnErrorContainerColor,
+    errorContainer = ErrorContainerColor, 
+    onErrorContainer = ErrorColor,   
 
     background = DarkBackground,
     onBackground = OnDarkBackground,
@@ -46,53 +41,71 @@ private val AppDarkColorScheme = darkColorScheme(
     onSurfaceVariant = OnDarkSurfaceVariant,
 
     outline = DarkOutline,
-    outlineVariant = DarkOutlineVariant,
+    outlineVariant = DarkSurfaceVariant, // Nota: DarkSurfaceVariant per il tema scuro
 
     scrim = ScrimColor
 )
 
-private val DarkColors = darkColorScheme(
-    primary = Indigo500,
-    onPrimary = White,
-    secondary = Green600,
-    onSecondary = White,
-    tertiary = Purple600,
-    background = Gray900,
-    onBackground = Gray100,
-    surface = Gray800,
-    onSurface = Gray100,
-    error = Red100,
-    onError = Black
+// NUOVA PALETTE "LUMINOSA E ARIOSA" (REVISIONATA) PER TEMA CHIARO
+private val AppLightColorScheme = lightColorScheme(
+    primary = SkyBluePrimary,
+    onPrimary = OnPrimaryColor,
+    primaryContainer = SkyBluePrimaryContainer,
+    onPrimaryContainer = OnSkyBluePrimaryContainer,
+
+    secondary = CoralSecondary,
+    onSecondary = OnCoralSecondary,
+    secondaryContainer = CoralSecondaryContainer,
+    onSecondaryContainer = OnCoralSecondaryContainer,
+
+    tertiary = WarmGrayTertiary,
+    onTertiary = OnPrimaryColor,
+    tertiaryContainer = WarmGrayTertiaryContainer,
+    onTertiaryContainer = OnWarmGrayTertiaryContainer,
+
+    background = BrightBackground,      // Sfondo schermo: Bianco puro
+    onBackground = OnBrightBackground,
+
+    surface = BrightSurface,            // Superfici generiche non-card: Bianco puro
+    onSurface = OnBrightSurface,
+
+    surfaceVariant = SubtleGraySurfaceVariant,     // Sfondo card: Grigio molto chiaro (da Color.kt)
+    onSurfaceVariant = OnSubtleGraySurfaceVariant, // Testo su sfondo card (da Color.kt)
+
+    outline = ModerateOutline,          // Bordo card: Grigio chiaro (da Color.kt, ora 0xFFD1D5DB)
+    outlineVariant = ModerateOutline,   // Bordo card variante: stesso grigio chiaro
+
+    error = ErrorColor,
+    onError = OnErrorColor,
+    errorContainer = ErrorContainerColor,
+    onErrorContainer = OnErrorContainerColor,
+
+    scrim = ScrimColor
 )
 
 @Composable
 fun DecisionistaAppTheme(
-    // darkTheme: Boolean = isSystemInDarkTheme(), // For dynamic light/dark theme switching
-    useDarkTheme: Boolean = true, // Default to dark theme as per new design
+    useDarkTheme: Boolean = true, 
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (useDarkTheme) {
         AppDarkColorScheme
     } else {
-        // AppLightColorScheme // Future: uncomment and use if light theme is defined
-        AppDarkColorScheme // Defaulting to dark for now even if useDarkTheme is false, until light is defined
+        AppLightColorScheme
     }
-
 
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Set status bar to be transparent or a dark color that matches the app's background
-            window.statusBarColor = colorScheme.background.toArgb() // Or a specific dark color like DarkBackground.toArgb()
-            // For dark theme, status bar icons should be light
+            window.setStatusBarColor(colorScheme.background.toArgb())
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDarkTheme
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography, // Typography.kt (puoi definire titoli, body ecc.)
+        typography = AppTypography,
         content = content
     )
 }

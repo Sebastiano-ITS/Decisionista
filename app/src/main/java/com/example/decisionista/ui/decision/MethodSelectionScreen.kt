@@ -3,7 +3,8 @@ package com.example.decisionista.ui.decision
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+// import androidx.compose.foundation.interaction.MutableInteractionSource // Rimosso se non usato
+// import androidx.compose.material.ripple.rememberRipple // Rimosso se non usato
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,14 +15,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+// import androidx.compose.foundation.layout.width // Rimosso perché lo Spacer che lo usava è stato eliminato
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AutoAwesome
+// import androidx.compose.material.icons.filled.AutoAwesome // Rimosso perché non più usato qui
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,7 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+// import androidx.compose.runtime.remember // Rimosso se non usato
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -82,7 +82,7 @@ fun MethodSelectionScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "🪄 Come vuoi che il mago decida?",
+                text = "Come vuoi che il mago decida?",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = 24.dp, top = 8.dp)
@@ -101,12 +101,13 @@ fun MethodSelectionScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(24.dp)) // Spazio sopra il pulsante
+
             val buttonShape = RoundedCornerShape(12.dp)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp) // Aumentata l'altezza
-                    .padding(top = 24.dp, bottom = 8.dp)
+                    .height(64.dp) // Altezza fissa per il pulsante
                     .shadow(elevation = 4.dp, shape = buttonShape)
                     .background(
                         brush = Brush.horizontalGradient(
@@ -122,22 +123,18 @@ fun MethodSelectionScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.AutoAwesome,
-                        contentDescription = "Lancia Decisione Icon",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(34.dp)) // Aumentato lo spazio
+                    // Icona Icons.Filled.AutoAwesome RIMOSSA
+                    // Spacer(modifier = Modifier.width(12.dp)) RIMOSSO
                     Text(
                         text = "Lancia la Decisione Magica",
-                        style = MaterialTheme.typography.titleLarge.copy( // Aumentato lo stile del testo
+                        style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold
                         ),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
+            // Lo spazio inferiore è gestito dal padding(16.dp) della Column genitore
         }
     }
 }

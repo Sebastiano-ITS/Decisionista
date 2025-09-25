@@ -26,9 +26,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.decisionista.ui.MainViewModel
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 
+/**
+ * Schermata principale dell'applicazione, mostra le statistiche dell'utente e le opzioni principali.
+ */
 @Composable
 fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = viewModel()) {
+    // Definizione dei colori e dei gradienti personalizzati
     val DarkBlue = Color(0xFF261D5A)
     val MediumBlue = Color(0xFF322870)
     val LightBlue = Color(0xFF5E5497)
@@ -36,20 +44,27 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
         colors = listOf(Color(0xFF8A2BE2), Color(0xFF4B0082))
     )
 
+    // Osservazione dello stato dell'utente e dei dati dal ViewModel
     val currentUser by mainViewModel.currentUser.collectAsState()
     val decisionCount by mainViewModel.decisionCount.collectAsState()
-    // Assicura che MainViewModel contenga recentActivities: StateFlow<List<RecentActivity>>
-    val recentActivities by mainViewModel.recentActivities.collectAsState()
 
+    // Per il momento uso una lista statica, dato che recentActivities non è definito nel tuo ViewModel
+    val recentActivities = listOf(
+        ActivityItem("Decisione finale presa", "2 ore fa", Icons.Outlined.CheckCircle),
+        ActivityItem("Oracolo consultato", "Ieri", Icons.Outlined.CheckCircle)
+    )
+
+    // Ottiene il nome utente dall'email o usa un valore di default
     val userName = currentUser?.email?.substringBefore('@') ?: "ospite"
     val scrollState = rememberScrollState()
 
+    // Contenitore principale della schermata
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.White)
     ) {
-        // Contenuto scrollabile
+        // Contenuto scrollabile che si adatta allo spazio rimanente
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -63,6 +78,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(32.dp))
+                // Card principale per l'opzione "Punto di Partenza"
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
@@ -72,22 +88,18 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                         modifier = Modifier.padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .background(
-                                    brush = GradientPurple,
-                                    shape = RoundedCornerShape(50.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.PlayArrow,
-                                contentDescription = "Play",
-                                tint = Color.White,
-                                modifier = Modifier.size(48.dp)
+                        // Contenitore per l'immagine circolare con sfondo sfumato
+
+                            // Immagine con bordi arrotondati, caricata in modo asincrono con Coil
+                            AsyncImage(
+                                model = "https://picsum.photos/200/200",
+                                contentDescription = "Punto di Partenza",
+                                modifier = Modifier
+                                    .size(90.dp)
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
                             )
-                        }
+
 
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
@@ -103,6 +115,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                             modifier = Modifier.padding(horizontal = 8.dp)
                         )
                         Spacer(modifier = Modifier.height(24.dp))
+                        // Bottone per navigare alla schermata di inserimento opzioni
                         Button(
                             onClick = { navController.navigate("inserisci-opzioni") },
                             modifier = Modifier
@@ -117,6 +130,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
+                // Riga per mostrare le statistiche
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -126,6 +140,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
+                // Titolo della sezione "Attività Recente"
                 Text(
                     text = "Attività Recente",
                     fontSize = 20.sp,
@@ -134,6 +149,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Elenco delle attività recenti, se presenti
                 if (recentActivities.isEmpty()) {
                     Text("Nessuna attività recente", color = Color.Gray)
                 } else {
@@ -142,7 +158,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                             ActivityRow(
                                 label = activity.label,
                                 time = activity.time,
-                                icon = Icons.Outlined.CheckCircle
+                                icon = activity.icon
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                         }
@@ -151,7 +167,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
             }
         }
 
-        // Header fisso
+        // Header fisso in alto, non scorre con il contenuto
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -168,6 +184,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Icone di navigazione
                 Icon(
                     imageVector = Icons.Filled.Schedule,
                     contentDescription = "Storia",
@@ -182,6 +199,7 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
+            // Testo di benvenuto personalizzato
             Text(
                 text = "Benvenuto, $userName",
                 color = Color.White,
@@ -198,6 +216,18 @@ fun HomeScreen(navController: NavHostController, mainViewModel: MainViewModel = 
     }
 }
 
+/**
+ * Modello di dati per rappresentare una singola attività recente.
+ */
+data class ActivityItem(
+    val label: String,
+    val time: String,
+    val icon: ImageVector
+)
+
+/**
+ * Componente riutilizzabile per mostrare una singola statistica.
+ */
 @Composable
 fun DecisionStatsCard(label: String, value: String) {
     Card(
@@ -215,6 +245,9 @@ fun DecisionStatsCard(label: String, value: String) {
     }
 }
 
+/**
+ * Componente riutilizzabile per mostrare una singola riga di attività recente.
+ */
 @Composable
 fun ActivityRow(label: String, time: String, icon: ImageVector) {
     Row(

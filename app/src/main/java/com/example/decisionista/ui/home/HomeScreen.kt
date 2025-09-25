@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,11 +24,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,8 +37,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,25 +50,21 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.decisionista.R
 import com.example.decisionista.model.SavedDecision
-import com.example.decisionista.ui.theme.PrimaryBlue // For gradient
-import com.example.decisionista.ui.theme.PrimaryPurple // For gradient
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
-
-// Helper function to format timestamp (copied from GlimmerioScreen for now)
-private fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault())
-    return sdf.format(Date(timestamp))
-}
+import com.example.decisionista.ui.theme.PrimaryBlue
+import com.example.decisionista.ui.theme.PrimaryPurple
+import com.example.decisionista.ui.theme.statsDecisionMadeBackgroundColor
+import com.example.decisionista.ui.theme.statsDecisionMadeLabelValueColor
+import com.example.decisionista.ui.theme.statsOracleConsultationBackgroundColor
+import com.example.decisionista.ui.theme.statsOracleConsultationLabelValueColor
+import com.example.decisionista.utils.formatTimestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,22 +72,155 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     userName: String,
     decisionsMadeCount: Int,
-    oracleConsultationsCount: Int, // Placeholder for now
+    oracleConsultationsCount: Int,
     recentDecisions: List<SavedDecision>,
     onStartDecision: () -> Unit,
     onNavigateToResult: (SavedDecision) -> Unit
 ) {
+    var showHelpDialog by remember { mutableStateOf(false) }
+    var showNotificationsDialog by remember { mutableStateOf(false) }
+
     val screenBackgroundBrush = Brush.verticalGradient(
         colors = listOf(
-            MaterialTheme.colorScheme.background.copy(alpha = 0.8f), // Slightly darker/themed top
+            MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
             MaterialTheme.colorScheme.background
         )
     )
 
+    Scaffold(
+        topBar = {
+            HomeTopAppBar(
+                userName = userName,
+                onHelpClick = { showHelpDialog = true },
+                onNotificationsClick = { showNotificationsDialog = true }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(screenBackgroundBrush)
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp) // Leggermente ridotto per più spazio ai lati
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(modifier = Modifier.height(16.dp)) // Spazio sotto TopAppBar
+            MainDecisionArea(onStartDecision = onStartDecision)
+            Spacer(modifier = Modifier.height(24.dp))
+            StatsSection(
+                decisionsMadeCount = decisionsMadeCount,
+                oracleConsultationsCount = oracleConsultationsCount
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            RecentDecisionsSection(
+                recentDecisions = recentDecisions,
+                onNavigateToResult = onNavigateToResult
+            )
+            Spacer(modifier = Modifier.height(24.dp)) // Padding inferiore più generoso
+        }
+    }
+
+    if (showHelpDialog) {
+        AlertDialog(
+            onDismissRequest = { showHelpDialog = false },
+            title = { Text("Guida Mistica") },
+            text = { Text("Benvenuto in Decisionista!\n\nEsplora questa schermata per iniziare nuove decisioni, consultare le tue statistiche arcane o rivedere le tue recenti scelte del Fato. Che la fortuna ti assista!") },
+            confirmButton = {
+                TextButton(onClick = { showHelpDialog = false }) {
+                    Text("Capito!")
+                }
+            }
+        )
+    }
+
+    if (showNotificationsDialog) {
+        AlertDialog(
+            onDismissRequest = { showNotificationsDialog = false },
+            title = { Text("Notifiche Arcane") },
+            text = { Text("Al momento, nessun sussurro dal Fato o messaggio dagli astri. Controlla più tardi!") },
+            confirmButton = {
+                TextButton(onClick = { showNotificationsDialog = false }) {
+                    Text("Ricevuto")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun HomeTopAppBar(
+    userName: String,
+    onHelpClick: () -> Unit,
+    onNotificationsClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(PrimaryPurple, PrimaryBlue)
+                )
+            )
+            .padding(horizontal = 16.dp, vertical = 16.dp) // Aumentato padding verticale
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically // Allineamento verticale icone
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                    contentDescription = stringResource(R.string.home_icon_content_description_help),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(35.dp) // Aumentata dimensione icona
+                        .clickable { onHelpClick() }
+                        .padding(4.dp) // Padding per area cliccabile maggiore
+                )
+                Icon(
+                    imageVector = Icons.Filled.Notifications,
+                    contentDescription = stringResource(R.string.home_icon_content_description_notifications),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(35.dp) // Aumentata dimensione icona
+                        .clickable { onNotificationsClick() }
+                        .padding(4.dp) // Padding per area cliccabile maggiore
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp)) // Ridotto spacer
+            Column(
+                modifier = Modifier.fillMaxWidth(), // Rimosso padding(top=8dp) qui, gestito da Spacer
+                horizontalAlignment = Alignment.CenterHorizontally // Centra il testo del nome e sottotitolo
+            ) {
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text(
+                    text = stringResource(R.string.home_welcome_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun MainDecisionArea(onStartDecision: () -> Unit) {
     val infiniteTransition = rememberInfiniteTransition(label = "evoca_button_pulse_transition")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = 1.03f, // Subtle pulse
+        targetValue = 1.03f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1200, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
@@ -94,243 +228,173 @@ fun HomeScreen(
         label = "evocaButtonPulseScale"
     )
 
-    Scaffold(
-        topBar = {
-            // Welcome Header with Gradient Background
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(PrimaryPurple, PrimaryBlue)
-                        )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp), // Leggermente ridotto padding superiore se c'è già lo spacer globale
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(RoundedCornerShape(100.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(PrimaryPurple.copy(alpha = 0.6f), PrimaryBlue.copy(alpha = 0.6f))
                     )
-                    .padding(horizontal = 16.dp, vertical = 12.dp) // Updated padding for buttons
-            ) {
-                // Main content inside the Box
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    // Row for icons to keep them at the very top
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.HelpOutline,
-                            contentDescription = "Help Icon",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Icon(
-                            imageVector = Icons.Filled.Notifications,
-                            contentDescription = "Notifications Icon",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-
-                    // Spacer to push the text down from the icons
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Column for the welcome text, centered
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                    ) {
-                        Text(
-                            text = "$userName",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Text(
-                            text = "Pronto per prendere la tua prossima decisione?",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
-                        )
-                    }
-                }
-            }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(screenBackgroundBrush)
-                .padding(innerPadding) // Add padding for the top bar
-                .padding(horizontal = 32.dp) // Only horizontal padding
-                .verticalScroll(rememberScrollState())
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            // Main Decision Section
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Main Icon/Placeholder (Placeholder for now)
-                Box(
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(RoundedCornerShape(100.dp))
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(PrimaryPurple.copy(alpha = 0.6f), PrimaryBlue.copy(alpha = 0.6f))
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Explore,
-                        contentDescription = "Compass Icon",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(60.dp)
-                    )
-                }
-
-                Text(
-                    text = "Punto di Partenza",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-                )
-                Text(
-                    text = "Lascia che ti guidiamo verso la scelta giusta. Ogni decisione è un passo verso il tuo futuro.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Custom Gradient Button
-                val buttonShape = RoundedCornerShape(12.dp)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(horizontal = 32.dp)
-                        .scale(pulseScale) // Apply pulsing animation
-                        .shadow(elevation = 8.dp, shape = buttonShape, spotColor = PrimaryPurple) // Slightly increased shadow
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(PrimaryPurple, PrimaryBlue)
-                            ),
-                            shape = buttonShape
-                        )
-                        .clip(buttonShape)
-                        .clickable { onStartDecision() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = "Start Decision Icon",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Inizia Decisione",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                }
-            }
-
-            // Statistics Section
-            Text(
-                text = "Il Tuo Percorso Mistico",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 12.dp, top = 16.dp)
+            Icon(
+                imageVector = Icons.Filled.Explore,
+                contentDescription = stringResource(R.string.home_main_icon_content_description_compass),
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(60.dp)
             )
-
+        }
+        Text(
+            text = stringResource(R.string.home_start_point_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+        )
+        Text(
+            text = stringResource(R.string.home_start_point_description),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 8.dp) // Aggiunto padding orizzontale al testo descrittivo
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        val buttonShape = RoundedCornerShape(12.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .scale(pulseScale)
+                .shadow(elevation = 8.dp, shape = buttonShape, spotColor = PrimaryPurple)
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(PrimaryPurple, PrimaryBlue)
+                    ),
+                    shape = buttonShape
+                )
+                .clip(buttonShape)
+                .clickable { onStartDecision() },
+            contentAlignment = Alignment.Center
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp) // Spazio tra i due quadrati
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                DecisionStatsCard(
-                    label = "Decisioni Prese",
-                    value = decisionsMadeCount.toString(),
-                    modifier = Modifier.weight(1f),
-                    labelColor = Color(0xFF6372E5), // Colore blu
-                    valueColor = Color(0xFF6372E5),  // Colore blu
-                    backgroundColor = Color(0xFFE5F1FF)
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = stringResource(R.string.home_start_decision_button_icon_content_description),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(24.dp)
                 )
-                DecisionStatsCard(
-                    label = "Consulti Oracolo",
-                    value = "$oracleConsultationsCount",
-                    modifier = Modifier.weight(1f),
-                    labelColor = Color(0xFFE996FE), // Colore viola chiaro
-                    valueColor = Color(0xFFE996FE),  // Colore viola chiaro
-                    backgroundColor = Color(0xFFF6E7FF)
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = stringResource(R.string.home_start_decision_button_text),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
-
-            // Recent Activity Section
-            Text(
-                text = "Attività Recenti nel Reame",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 12.dp, top = 8.dp)
-            )
-
-            if (recentDecisions.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.HistoryEdu,
-                        contentDescription = "Nessuna attività recente",
-                        modifier = Modifier.size(60.dp).padding(bottom = 16.dp),
-                        tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        text = "Nessuna eco dal passato recente.",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = "Evoca una nuova decisione per lasciare il segno! ✨",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    recentDecisions.forEach { decision ->
-                        RecentDecisionItem(
-                            decision = decision,
-                            onClick = { onNavigateToResult(decision) }
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp)) // Add some padding at the bottom
         }
     }
 }
 
+@Composable
+fun StatsSection(decisionsMadeCount: Int, oracleConsultationsCount: Int) {
+    Column {
+        Text(
+            text = stringResource(R.string.home_mystic_path_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold, // Reso Bold per più importanza
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 16.dp) // Aumentato padding bottom
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            DecisionStatsCard(
+                label = stringResource(R.string.home_stats_decisions_made),
+                value = decisionsMadeCount.toString(),
+                modifier = Modifier.weight(1f),
+                labelColor = statsDecisionMadeLabelValueColor,
+                valueColor = statsDecisionMadeLabelValueColor,
+                backgroundColor = statsDecisionMadeBackgroundColor
+            )
+            DecisionStatsCard(
+                label = stringResource(R.string.home_stats_oracle_consultations),
+                value = "$oracleConsultationsCount",
+                modifier = Modifier.weight(1f),
+                labelColor = statsOracleConsultationLabelValueColor,
+                valueColor = statsOracleConsultationLabelValueColor,
+                backgroundColor = statsOracleConsultationBackgroundColor
+            )
+        }
+    }
+}
 
-@OptIn(ExperimentalMaterial3Api::class) // Needed for Card onClick
+@Composable
+fun RecentDecisionsSection(
+    recentDecisions: List<SavedDecision>,
+    onNavigateToResult: (SavedDecision) -> Unit
+) {
+    Column {
+        Text(
+            text = stringResource(R.string.home_recent_activity_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold, // Reso Bold
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 16.dp) // Unificato padding bottom
+        )
+        if (recentDecisions.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.HistoryEdu,
+                    contentDescription = stringResource(R.string.home_no_recent_activity_icon_content_description),
+                    modifier = Modifier.size(60.dp).padding(bottom = 16.dp),
+                    tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = stringResource(R.string.home_no_recent_activity_message_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = stringResource(R.string.home_no_recent_activity_message_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp) // Aggiunto padding orizzontale
+                )
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { // Leggermente ridotto spazio tra le card
+                recentDecisions.forEach { decision ->
+                    RecentDecisionItem(
+                        decision = decision,
+                        onClick = { onNavigateToResult(decision) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecentDecisionItem(
     decision: SavedDecision,
@@ -343,8 +407,9 @@ fun RecentDecisionItem(
             .fillMaxWidth()
             .clip(cardShape),
         shape = cardShape,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.7f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), // Aggiunta leggera elevazione
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)) // Bordo più tenue
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -356,8 +421,13 @@ fun RecentDecisionItem(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+            
+            val prefixFromResource = stringResource(R.string.recent_decision_item_result_prefix)
+            // Assicura che ci sia " : " (spazio, due punti, spazio) tra il prefisso e il risultato
+            val labelText = prefixFromResource.trimEnd(' ', ':') + " : " 
+
             Text(
-                text = "Risultato: ${decision.result}",
+                text = labelText + decision.result, // Esempio: "Risultato : pino"
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -366,7 +436,7 @@ fun RecentDecisionItem(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             Text(
-                text = formatTimestamp(decision.timestamp),
+                text = formatTimestamp(decision.timestamp), // Now uses the imported function
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
@@ -385,31 +455,33 @@ fun DecisionStatsCard(
 ) {
     Card(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp),
+            .height(140.dp) // Altezza fissa per uniformità
+            .clip(RoundedCornerShape(16.dp)), // Raggio aumentato
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Aggiunta leggera elevazione
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp), // Aggiungi qui il padding
+                .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 32.sp),
+                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp), // Testo valore più grande
                 fontWeight = FontWeight.ExtraBold,
                 color = valueColor,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp)) // Aumentato spacer
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
                 color = labelColor,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 4.dp) // Padding per evitare testo troppo vicino ai bordi
             )
         }
     }

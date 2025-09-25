@@ -44,15 +44,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.decisionista.model.SavedDecision
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.decisionista.utils.formatTimestamp // IMPORT AGGIUNTO
+// RIMOSSI import java.text.SimpleDateFormat, java.util.Date, java.util.Locale
 
-// Helper function to format timestamp
-fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("MMM dd, yyyy - hh:mm a", Locale.getDefault())
-    return sdf.format(Date(timestamp))
-}
+// RIMOSSA la funzione formatTimestamp locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,7 +61,7 @@ fun GlimmerioScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("🌟 Glimmerio dei Ricordi") }, // Updated title
+                title = { Text("Glimmerio dei Ricordi") }, // Updated title
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
@@ -188,7 +183,7 @@ fun DecisionCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Deciso il: ${formatTimestamp(decision.timestamp)}",
+                text = "Deciso il: ${formatTimestamp(decision.timestamp)}", // ORA UTILIZZA L'UTILITY GLOBALE
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )

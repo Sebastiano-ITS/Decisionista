@@ -1,5 +1,6 @@
 package com.example.decisionista.ui.decision
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,10 +19,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.ArrowBack
+// import androidx.compose.material.icons.filled.ArrowBack // Rimosso perché autoMirrored.ArrowBack è usato
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Home // AGGIUNTO IMPORT
 import androidx.compose.material.icons.filled.PlaylistAddCheck
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,52 +60,35 @@ import com.example.decisionista.ui.theme.PrimaryPurple
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OptionsInputScreen(
-    options: List<OptionData>, // Changed to List<OptionData>
-    onOptionsChange: (List<OptionData>) -> Unit, // Changed to List<OptionData>
+    options: List<OptionData>,
+    onOptionsChange: (List<OptionData>) -> Unit,
     onNext: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToHome: () -> Unit // NUOVO PARAMETRO
 ) {
     var newOptionText by remember { mutableStateOf("") }
-    var newOptionWeightInput by remember { mutableStateOf("1") } // Input for weight, default 1
+    var newOptionWeightInput by remember { mutableStateOf("1") }
 
     val textFieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor = MaterialTheme.colorScheme.onSurface,
         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-        disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-        errorTextColor = MaterialTheme.colorScheme.error,
-        focusedContainerColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        disabledContainerColor = Color.Transparent,
-        errorContainerColor = Color.Transparent,
         cursorColor = PrimaryPurple,
-        errorCursorColor = MaterialTheme.colorScheme.error,
         focusedBorderColor = PrimaryPurple,
-        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-        disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.38f),
-        errorBorderColor = MaterialTheme.colorScheme.error,
-        focusedLeadingIconColor = PrimaryPurple,
-        unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
-        errorLeadingIconColor = MaterialTheme.colorScheme.error,
-        focusedTrailingIconColor = PrimaryPurple,
-        unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
-        errorTrailingIconColor = MaterialTheme.colorScheme.error,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline, 
         focusedLabelColor = PrimaryPurple,
-        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.77f),
-        errorLabelColor = MaterialTheme.colorScheme.error
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Scolpisci le Tue Opzioni") },
+                title = { Text("Scolpisci le Tue Opzioni") }, 
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Indietro")
                     }
                 },
+
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.primary,
@@ -124,11 +110,12 @@ fun OptionsInputScreen(
                     .padding(bottom = 20.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "✨ Definisci i Sentieri del Fato ✨",
+                        text = "Definisci i Sentieri del Fato", // Emoji rimossi
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 16.dp)
@@ -146,8 +133,7 @@ fun OptionsInputScreen(
                         OutlinedTextField(
                             value = newOptionWeightInput,
                             onValueChange = { newValue ->
-                                // Allow only digits, or empty for default
-                                newOptionWeightInput = newValue.filter { it.isDigit() }.take(2) // Max 2 digits for weight
+                                newOptionWeightInput = newValue.filter { it.isDigit() }.take(2)
                             },
                             label = { Text("Peso") },
                             modifier = Modifier.weight(0.3f),
@@ -164,7 +150,7 @@ fun OptionsInputScreen(
                                 val newOption = OptionData(text = newOptionText.trim(), weight = weight)
                                 onOptionsChange(options + newOption)
                                 newOptionText = ""
-                                newOptionWeightInput = "1" // Reset weight input
+                                newOptionWeightInput = "1"
                             }
                         },
                         enabled = newOptionText.isNotBlank(),
@@ -181,7 +167,7 @@ fun OptionsInputScreen(
             }
 
             if (options.isEmpty()) {
-                Column(
+                 Column(
                     modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -221,7 +207,7 @@ fun OptionsInputScreen(
             }
             
             Spacer(modifier = Modifier.height(16.dp))
-
+            
             val buttonEnabled = options.size >= 2
             val buttonShape = RoundedCornerShape(12.dp)
             Box(
@@ -282,14 +268,15 @@ fun OptionsInputScreen(
 }
 
 @Composable
-fun OptionItem(index: Int, optionData: OptionData, onRemove: () -> Unit) { // Changed to OptionData
+fun OptionItem(index: Int, optionData: OptionData, onRemove: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f) 
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline) 
     ) {
         Row(
             modifier = Modifier
@@ -300,12 +287,12 @@ fun OptionItem(index: Int, optionData: OptionData, onRemove: () -> Unit) { // Ch
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "${index + 1}. ${optionData.text}", // Display option text
+                    text = "${index + 1}. ${optionData.text}",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = "Peso: ${optionData.weight}", // Display option weight
+                    text = "Peso: ${optionData.weight}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )

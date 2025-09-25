@@ -14,8 +14,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.DeleteSweep // NUOVA ICONA
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -34,48 +35,39 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-// Rimossi: import androidx.compose.runtime.getValue
-// Rimossi: import androidx.compose.runtime.mutableStateOf
-// Rimossi: import androidx.compose.runtime.remember
-// Rimossi: import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.decisionista.GUEST_USER_IDENTIFIER
 import com.example.decisionista.model.SavedDecision // Keep for future use if needed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     userEmail: String,
-    magicName: String, // NUOVO: Nome magico dell'utente
+    magicName: String,
     onLogout: () -> Unit,
     onBack: () -> Unit,
     decisions: List<SavedDecision>, // Kept for API consistency
     onNavigateToResult: (SavedDecision) -> Unit, // Kept for API consistency
-    // NUOVI parametri per gli switch
     isDarkModeActual: Boolean,
     onDarkModeChange: (Boolean) -> Unit,
-    soundEnabledActual: Boolean,
-    onSoundEnabledChange: (Boolean) -> Unit,
-    vibrationsEnabledActual: Boolean,
-    onVibrationsEnabledChange: (Boolean) -> Unit,
-    showLogoutDialog: Boolean, // NUOVO: per controllare il dialogo da MainActivity
-    onShowLogoutDialogChange: (Boolean) -> Unit, // NUOVO: per cambiare lo stato del dialogo
+    showLogoutDialog: Boolean,
+    onShowLogoutDialogChange: (Boolean) -> Unit,
+    showTermsDialog: Boolean,
+    onShowTermsDialogChange: (Boolean) -> Unit,
+    showResetDialog: Boolean,
+    onShowResetDialogChange: (Boolean) -> Unit,
+    onResetDataConfirm: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Rimossi gli stati locali per gli switch e showLogoutDialog, ora gestiti da MainActivity
-
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("👤 Profilo Utente") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Indietro")
-                    }
-                },
+                title = { Text("Profilo Utente") },
+
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.primary,
@@ -104,21 +96,14 @@ fun ProfileScreen(
                     modifier = Modifier.padding(20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "🧙",
-                        fontSize = 40.sp,
-                        modifier = Modifier.padding(end = 16.dp)
-                    )
                     Column {
                         Text(
-                            // MODIFICATO: Saluto personalizzato con magicName se disponibile
-                            text = if (magicName.isNotBlank() && magicName != "Ospite") "Benvenuto, Nobile $magicName!" else "Benvenuto, Nobile Decisore!",
+                            text = if (magicName.isNotBlank() && magicName != "Ospite") "Benvenuto/a, Nobile $magicName!" else "Benvenuto/a, Nobile Decisore!",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        // L'email viene visualizzata come prima
-                        if (userEmail.isNotBlank() && userEmail != "Ospite") { // Non mostrare "Ospite" come email
+                        if (userEmail.isNotBlank() && userEmail != GUEST_USER_IDENTIFIER) { // Non mostrare email per ospite
                             Text(
                                 text = userEmail,
                                 style = MaterialTheme.typography.bodyMedium,
@@ -140,56 +125,34 @@ fun ProfileScreen(
 
             SettingsItem(
                 icon = "🎨",
-                title = "Modalità Notte Stellata",
+                title = "Tema",
                 subtitle = "Abilita il tema scuro cosmico",
                 isSwitch = true,
-                switchValue = isDarkModeActual, // MODIFICATO
-                onSwitchChange = onDarkModeChange // MODIFICATO
-            )
-
-            SettingsItem(
-                icon = "🔊",
-                title = "Sussurri Ancestrali",
-                subtitle = "Attiva gli effetti sonori",
-                isSwitch = true,
-                switchValue = soundEnabledActual, // MODIFICATO
-                onSwitchChange = onSoundEnabledChange // MODIFICATO
-            )
-
-            SettingsItem(
-                icon = "📳",
-                title = "Aure Mistiche",
-                subtitle = "Feedback con vibrazione",
-                isSwitch = true,
-                switchValue = vibrationsEnabledActual, // MODIFICATO
-                onSwitchChange = onVibrationsEnabledChange // MODIFICATO
-            )
-
-            SettingsItem(
-                icon = "👤",
-                title = "Personalizza Avatar Magico",
-                subtitle = "Modifica l'aspetto del tuo alter ego",
-                onClick = { /* TODO: Implement avatar customization screen */ }
+                switchValue = isDarkModeActual,
+                onSwitchChange = onDarkModeChange
             )
             
             SettingsItem(
                 icon = "📜",
                 title = "Termini dell'Arcano",
                 subtitle = "Leggi i patti e le condizioni",
-                onClick = { /* TODO: Navigate to Terms & Conditions screen */ }
+                onClick = { onShowTermsDialogChange(true) }
             )
 
-            SettingsItem(
-                icon = "🔒",
-                title = "Privacy Mistica",
-                subtitle = "Gestisci le tue preferenze",
-                onClick = { /* TODO: Navigate to Privacy Policy screen */ }
-            )
+            // NUOVO: SettingsItem per Azzera Dati Utente
+            if (userEmail.isNotBlank() && userEmail != GUEST_USER_IDENTIFIER) {
+                SettingsItem(
+                    icon = "🗑️", // Puoi usare anche un Icon(Icons.Filled.DeleteSweep, ...) se preferisci
+                    title = "Azzera Dati Utente",
+                    subtitle = "Resetta decisioni e conteggio Oracolo",
+                    onClick = { onShowResetDialogChange(true) }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             FilledTonalButton(
-                onClick = { onShowLogoutDialogChange(true) }, // MODIFICATO
+                onClick = { onShowLogoutDialogChange(true) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -199,7 +162,7 @@ fun ProfileScreen(
                     contentColor = MaterialTheme.colorScheme.onErrorContainer
                 )
             ) {
-                Icon(Icons.Filled.Logout, contentDescription = "Logout Icon")
+                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout Icon")
                 Spacer(modifier = Modifier.width(12.dp))
                 Text("Logout", style = MaterialTheme.typography.titleMedium)
             }
@@ -207,9 +170,9 @@ fun ProfileScreen(
         }
     }
 
-    if (showLogoutDialog) { // MODIFICATO: usa il parametro
+    if (showLogoutDialog) {
         AlertDialog(
-            onDismissRequest = { onShowLogoutDialogChange(false) }, // MODIFICATO
+            onDismissRequest = { onShowLogoutDialogChange(false) },
             shape = RoundedCornerShape(16.dp),
             containerColor = MaterialTheme.colorScheme.surface,
             title = { Text("Conferma Fuga", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall) },
@@ -218,7 +181,7 @@ fun ProfileScreen(
                 TextButton(
                     onClick = {
                         onLogout()
-                        onShowLogoutDialogChange(false) // MODIFICATO
+                        onShowLogoutDialogChange(false)
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
@@ -227,10 +190,69 @@ fun ProfileScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { onShowLogoutDialogChange(false) }, // MODIFICATO
+                    onClick = { onShowLogoutDialogChange(false) },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text("Resta")
+                }
+            }
+        )
+    }
+
+    if (showTermsDialog) {
+        AlertDialog(
+            onDismissRequest = { onShowTermsDialogChange(false) },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text("Termini dell'Arcano", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall) },
+            text = {
+                Text(
+                    "Benvenuto in Decisionista!\n\n" +
+                    "Utilizzando questa applicazione, accetti di affidare le tue decisioni al Fato, " +
+                    "all'Oracolo e ad altre entità mistiche. Non ci assumiamo responsabilità per " +
+                    "scelte di vita che portano a ricchezza indicibile, fama improvvisa o incontri " +
+                    "con unicorni.\n\n" +
+                    "Ricorda: ogni decisione è un'avventura!\n\n" +
+                    "- Il Team Decisionista",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { onShowTermsDialogChange(false) },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Ho Capito")
+                }
+            }
+        )
+    }
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { onShowResetDialogChange(false) },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            title = { Text("Azzerare Dati?", color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineSmall) },
+            text = { Text("Sei sicuro di voler azzerare la cronologia delle decisioni e il conteggio delle consultazioni dell'Oracolo? Questa azione è irreversibile.", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onResetDataConfirm()
+                        onShowResetDialogChange(false)
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Azzera")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { onShowResetDialogChange(false) },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Annulla")
                 }
             }
         )
@@ -240,7 +262,7 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsItem(
-    icon: String,
+    icon: String, // Cambiato da Icon a String per flessibilità, puoi usare Emoji o un Composable Icon qui
     title: String,
     subtitle: String,
     isSwitch: Boolean = false,
@@ -265,12 +287,15 @@ fun SettingsItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                // Se icon è un Emoji String
                 Text(
-                    text = icon,
-                    fontSize = 26.sp,
-                    modifier = Modifier.padding(end = 16.dp),
+                    text = icon, 
+                    fontSize = 26.sp, 
+                    modifier = Modifier.padding(end = 16.dp), 
                     color = MaterialTheme.colorScheme.secondary
                 )
+                // Se volessi usare un Icon Composable, dovresti modificare il parametro icon 
+                // e la logica qui per accettare un ImageVector o un @Composable () -> Unit.
                 Column {
                     Text(
                         text = title,

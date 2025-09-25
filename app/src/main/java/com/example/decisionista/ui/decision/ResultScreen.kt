@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Autorenew // Better icon for Retry
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HelpOutline // Icon for "Why"
@@ -74,7 +75,7 @@ fun ResultScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("✨ Il Destino Svelato ✨") },
+                title = { Text("Il Destino Svelato") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.primary,
@@ -169,7 +170,7 @@ fun ResultScreen(
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary)
                     ) {
-                        Icon(Icons.Filled.HelpOutline, contentDescription = "Perché", tint = MaterialTheme.colorScheme.secondary)
+                        Icon(Icons.AutoMirrored.Filled.HelpOutline, contentDescription = "Perché", tint = MaterialTheme.colorScheme.secondary)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Perché?", color = MaterialTheme.colorScheme.secondary)
                     }
@@ -181,7 +182,7 @@ fun ResultScreen(
                 ) {
                     Icon(Icons.Default.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Torna alla Home del Reame", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                    Text("Torna alla Home", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -194,7 +195,7 @@ fun ResultScreen(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             title = {
                 Text(
-                    text = "🔮 Segreti dell'Oracolo 🔮",
+                    text = "🔮 Segreti dell'Oracolo",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
