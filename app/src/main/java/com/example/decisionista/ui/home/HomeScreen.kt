@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -50,12 +51,14 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.decisionista.R
 import com.example.decisionista.model.SavedDecision
 import com.example.decisionista.ui.theme.PrimaryBlue
@@ -236,7 +239,7 @@ fun MainDecisionArea(onStartDecision: () -> Unit) {
     ) {
         Box(
             modifier = Modifier
-                .size(120.dp)
+                .size(150.dp)
                 .clip(RoundedCornerShape(100.dp))
                 .background(
                     brush = Brush.verticalGradient(
@@ -245,11 +248,20 @@ fun MainDecisionArea(onStartDecision: () -> Unit) {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Filled.Explore,
-                contentDescription = stringResource(R.string.home_main_icon_content_description_compass),
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(60.dp)
+            // Immagine con bordi arrotondati, caricata in modo asincrono con Coil
+            AsyncImage(
+                model = R.drawable.mago,
+                contentDescription = "Punto di Partenza",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .shadow(
+                        elevation = 26.dp, // L'altezza "dell'ombra"
+                        shape = CircleShape,
+                        ambientColor = Color.Black.copy(alpha = 0.5f), // Colore dell'ombra
+                        spotColor = Color.Black.copy(alpha = 0.5f) // Colore dell'ombra
+                    ),
+                contentScale = ContentScale.Crop
             )
         }
         Text(
@@ -305,6 +317,8 @@ fun MainDecisionArea(onStartDecision: () -> Unit) {
         }
     }
 }
+
+
 
 @Composable
 fun StatsSection(decisionsMadeCount: Int, oracleConsultationsCount: Int) {
