@@ -1,5 +1,6 @@
 package com.example.decisionista.ui.decision
 
+// Import necessari per l'UI e i componenti di Compose
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -18,9 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.filled.Autorenew // Better icon for Retry
+import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.HelpOutline // Icon for "Why"
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,18 +49,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.decisionista.model.DecisionMethod
-import com.example.decisionista.model.OptionData // Added import for OptionData
+import com.example.decisionista.model.OptionData
 
+/**
+ * Questa schermata mostra il risultato finale di una decisione.
+ * Offre opzioni per ritentare la decisione, scoprire un motivo "magico"
+ * per il risultato e tornare alla schermata Home.
+ *
+ * @param result La stringa che rappresenta l'opzione scelta.
+ * @param method Il metodo di decisione utilizzato
+ * @param options La lista delle opzioni inizialmente inserite.
+ * @param onRetry Callback chiamato per ritentare la decisione.
+ * @param onGoHome Callback chiamato per tornare alla schermata Home.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResultScreen(
     result: String,
     method: DecisionMethod,
-    options: List<OptionData>, // Added options parameter
+    options: List<OptionData>,
     onRetry: () -> Unit,
-    onGoHome: () -> Unit // Changed from onSave and onHome
+    onGoHome: () -> Unit
 ) {
+    // Stato per controllare la visibilità del dialogo "Perché"
     var showWhyDialog by remember { mutableStateOf(false) }
+
+    // Lista di ragioni "magiche" per spiegare il risultato
     val magicalReasons = listOf(
         "Le stelle si sono allineate in modo perfetto per questa scelta.",
         "L'energia cosmica ha guidato la decisione verso questa opzione.",
@@ -72,6 +86,7 @@ fun ResultScreen(
         "Le rune del fato hanno composto questo verdetto."
     )
 
+    // Layout principale con Scaffold per la Top Bar e il contenuto
     Scaffold(
         topBar = {
             TopAppBar(
@@ -93,7 +108,7 @@ fun ResultScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceAround
         ) {
-            // Result Card
+            // Card che mostra il risultato
             AnimatedVisibility(
                 visible = true,
                 enter = scaleIn(animationSpec = tween(800)) + fadeIn(animationSpec = tween(600))
@@ -106,24 +121,29 @@ fun ResultScreen(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp,
-                        hoveredElevation = 12.dp)
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 8.dp,
+                        hoveredElevation = 12.dp
+                    )
                 ) {
                     Column(
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Emoji che rappresenta il metodo di decisione
                         Text(
                             text = method.emoji,
                             fontSize = 72.sp,
                             modifier = Modifier.padding(bottom = 16.dp)
                         )
+                        // Titolo e sottotitolo del risultato
                         Text(
                             text = "Il Fato ha Decretato:",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
+                        // Il risultato vero e proprio
                         Text(
                             text = result,
                             style = MaterialTheme.typography.displaySmall,
@@ -132,20 +152,17 @@ fun ResultScreen(
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             lineHeight = 36.sp
                         )
-                        // TODO: Consider displaying options here if relevant
-                        // options.forEach { option -> Text(option.text) }
                     }
                 }
             }
 
-            // Action Buttons Section
+            // Sezione con i pulsanti d'azione
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Save Button REMOVED as saving is handled in RitualScreen
-
+                // Pulsanti "Riprova" e "Perché?"
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -176,8 +193,9 @@ fun ResultScreen(
                     }
                 }
 
+                // Pulsante "Torna alla Home"
                 TextButton(
-                    onClick = onGoHome, // Updated to use onGoHome
+                    onClick = onGoHome,
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Icon(Icons.Default.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -188,6 +206,7 @@ fun ResultScreen(
         }
     }
 
+    // Dialogo che si apre quando si clicca "Perché?"
     if (showWhyDialog) {
         AlertDialog(
             onDismissRequest = { showWhyDialog = false },
@@ -203,6 +222,7 @@ fun ResultScreen(
             },
             text = {
                 Text(
+                    // Mostra una ragione casuale dalla lista
                     text = magicalReasons.random(),
                     style = MaterialTheme.typography.bodyLarge,
                     fontStyle = FontStyle.Italic,
