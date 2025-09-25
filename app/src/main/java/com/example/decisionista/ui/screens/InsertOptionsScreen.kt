@@ -82,8 +82,11 @@ fun InsertOptionsScreen(navController: NavHostController, mainViewModel: MainVie
                     ) {
                         itemsIndexed(options) { index, option ->
                             OptionItem(
-                                modifier = Modifier
-                                    .animateItemPlacement(tween(500))
+                                modifier = Modifier.animateItem(
+                                    fadeInSpec = null,
+                                    fadeOutSpec = null,
+                                    placementSpec = tween(500)
+                                )
                                     .fillMaxWidth(),
                                 option = option,
                                 onDelete = {
