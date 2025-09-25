@@ -96,17 +96,23 @@ fun OracleScreen(
     val prophecies = listOf(
         "Le stelle sussurrano che un grande cambiamento è in arrivo.",
         "La fortuna sorriderà a chi osa fare il primo passo.",
+        "Non temere il futuro: se va male, c’è sempre un concorso pubblico da qualche parte.",
         "Un incontro inaspettato porterà nuove opportunità.",
+        "Incontrerai Sydney Sweeney",
         "La pazienza sarà la tua alleata più preziosa oggi.",
-        "Una decisione coraggiosa aprirà porte mai immaginate.",
+        "L'amore della tua vita arriverà",
+        "Chi lascia la strada vecchia per la nuova.... rischia di trovarsi senza stipendio a fine mese.",
+        "Incontrerai Emma Watson",
         "L'energia positiva che emani attrarrà ciò che desideri.",
         "Un piccolo gesto di gentilezza avrà grandi conseguenze.",
-        "Un stage arriverà per te..",
+        "Uno stage arriverà per te",
         "La fortuna ti sorriderà se linux userai..",
         "Per te arriverà un lavoro sicuro",
         "La risposta che cerchi si trova più vicina di quanto pensi.",
-        "Il destino ha in serbo per te una sorpresa meravigliosa.",
-        "La tua intuizione ti guiderà verso la scelta giusta."
+        "Il McDonalds ti aspetta",
+        "La felicità è come il posto fisso: tutti la cercano, pochi la trovano, e chi ce l’ha non la molla più",
+        "La tua intuizione ti guiderà verso la scelta giusta.",
+        "Un bel ragazzo americano occhi azzuri e capelli biondi arriverà"
     )
 
     val generateProphecy = remember(isGenerating, prophecies, onOracleConsulted) {
