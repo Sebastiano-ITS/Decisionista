@@ -1,6 +1,6 @@
-// MainActivity.kt
 package com.example.decisionista
 
+// Import necessari per l'Activity e i componenti di Compose
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -16,8 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.MenuBook // NUOVA ICONA
-import androidx.compose.material.icons.filled.AutoAwesome // NUOVA ICONA
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,11 +40,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.edit // For SharedPreferences KTX
+import androidx.core.content.edit
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit as dsEdit // Alias to avoid conflict
+import androidx.datastore.preferences.core.edit as dsEdit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.decisionista.data.DecisionRepository
@@ -73,10 +73,10 @@ import java.security.MessageDigest
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-// GUEST_USER_IDENTIFIER is used by MainActivity to identify guest sessions.
+// Costante per identificare una sessione ospite
 const val GUEST_USER_IDENTIFIER = "_decisionista_guest_user_"
 
-// SharedPreferences constants (for user accounts and oracle count)
+// Costanti per le SharedPreferences (account utente e conteggio oracolo)
 private const val PREFS_NAME = "DecisionistaUserPrefs"
 private const val KEY_REGISTERED_USERS_STRING_V2 = "registered_users_map_v2"
 private const val KEY_ORACLE_COUNT_PREFIX = "oracle_count_"
@@ -85,7 +85,7 @@ private const val ENTRY_DELIMITER = "##USER_ENTRY##"
 private const val KV_DELIMITER_PASS = "##EMAIL_PASS_KV##"
 private const val KV_DELIMITER_MAGIC_NAME = "##MAGIC_NAME_KV##"
 
-// DataStore constants (for theme settings)
+// Costanti per DataStore (impostazioni del tema)
 private const val THEME_PREFERENCES_NAME = "decisionista_theme_prefs"
 private val Context.themeSettingsDataStore: DataStore<Preferences> by preferencesDataStore(name = THEME_PREFERENCES_NAME)
 private val DARK_MODE_ENABLED_KEY = booleanPreferencesKey("dark_mode_enabled")
@@ -93,7 +93,11 @@ private val DARK_MODE_ENABLED_KEY = booleanPreferencesKey("dark_mode_enabled")
 // Data class per i dati dell'account utente
 private data class UserAccountData(val hashedPassword: String, val magicName: String)
 
-// --- Utility Functions for Hashing and SharedPreferences ---
+// --- Funzioni di utilità per Hashing e SharedPreferences ---
+/**
+ * Esegue l'hashing di una stringa utilizzando l'algoritmo SHA-256.
+ * Usato per memorizzare in modo sicuro le password.
+ */
 private fun sha256(input: String): String {
     return try {
         val digest = MessageDigest.getInstance("SHA-256")
@@ -104,12 +108,18 @@ private fun sha256(input: String): String {
     }
 }
 
+/**
+ * Serializza una mappa di utenti in una stringa per la memorizzazione.
+ */
 private fun serializeUserMap(map: Map<String, UserAccountData>): String {
     return map.entries.joinToString(ENTRY_DELIMITER) { (email, accountData) ->
         "${email}${KV_DELIMITER_PASS}${accountData.hashedPassword}${KV_DELIMITER_MAGIC_NAME}${accountData.magicName}"
     }
 }
 
+/**
+ * Deserializza una stringa in una mappa di utenti.
+ */
 private fun deserializeUserMap(serialized: String?): Map<String, UserAccountData> {
     if (serialized.isNullOrBlank()) {
         return emptyMap()
@@ -135,6 +145,7 @@ private fun deserializeUserMap(serialized: String?): Map<String, UserAccountData
     return map
 }
 
+// Funzioni per salvare e caricare i dati utente con SharedPreferences
 private fun saveRegisteredUsers(context: Context, users: Map<String, UserAccountData>) {
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     val serializedUsers = serializeUserMap(users)
@@ -149,10 +160,11 @@ private fun loadRegisteredUsers(context: Context): Map<String, UserAccountData> 
     return deserializeUserMap(serializedUsers)
 }
 
+// Funzioni per salvare e caricare il conteggio dell'oracolo
 private fun saveOracleCount(context: Context, userEmail: String, count: Int) {
     if (userEmail.isBlank() || userEmail == GUEST_USER_IDENTIFIER) return
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    prefs.edit { 
+    prefs.edit {
         putInt("${KEY_ORACLE_COUNT_PREFIX}${userEmail}", count)
     }
 }
@@ -163,6 +175,7 @@ private fun loadOracleCount(context: Context, userEmail: String): Int {
     return prefs.getInt("${KEY_ORACLE_COUNT_PREFIX}${userEmail}", 0)
 }
 
+// Funzioni per gestire l'utente attualmente loggato
 private fun saveLoggedInUser(context: Context, email: String) {
     val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     prefs.edit {
@@ -181,9 +194,12 @@ private fun clearLoggedInUser(context: Context) {
         remove(KEY_LOGGED_IN_USER_EMAIL)
     }
 }
-// --- End SharedPreferences Utility Functions ---
+// --- Fine delle funzioni di utilità per SharedPreferences ---
 
-// --- Utility Functions for Theme DataStore ---
+// --- Funzioni di utilità per DataStore del tema ---
+/**
+ * Osserva il setting del tema scuro tramite DataStore.
+ */
 fun observeDarkModeSetting(context: Context): Flow<Boolean> {
     return context.themeSettingsDataStore.data
         .catch { exception ->
@@ -194,27 +210,34 @@ fun observeDarkModeSetting(context: Context): Flow<Boolean> {
             }
         }
         .map { preferences ->
-            preferences[DARK_MODE_ENABLED_KEY] ?: true // Default to dark mode if no preference set
+            preferences[DARK_MODE_ENABLED_KEY] ?: true // Default al tema scuro
         }
 }
 
+/**
+ * Salva l'impostazione del tema scuro in DataStore.
+ */
 suspend fun saveDarkModeSetting(context: Context, isDarkMode: Boolean) {
-    context.themeSettingsDataStore.dsEdit { settings -> // Using alias dsEdit
+    context.themeSettingsDataStore.dsEdit { settings ->
         settings[DARK_MODE_ENABLED_KEY] = isDarkMode
     }
 }
-// --- End Theme DataStore Utility Functions ---
+// --- Fine delle funzioni di utilità per DataStore del tema ---
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            // L'app inizia qui
             DecisionistaApp()
         }
     }
 }
 
+/**
+ * Componente composable che disegna la barra di navigazione inferiore.
+ */
 @Composable
 fun AppNavigationBar(
     currentScreen: Screen,
@@ -234,10 +257,10 @@ fun AppNavigationBar(
             val selected = currentScreen == screen
             val icon = when (screen) {
                 Screen.HOME -> Icons.Filled.Home
-                Screen.GLIMMERIO -> Icons.Filled.MenuBook // ICONA MODIFICATA
-                Screen.ORACLE -> Icons.Filled.AutoAwesome // ICONA MODIFICATA
+                Screen.GLIMMERIO -> Icons.Filled.MenuBook
+                Screen.ORACLE -> Icons.Filled.AutoAwesome
                 Screen.PROFILE -> Icons.Filled.Person
-                else -> Icons.Filled.Home // Default icon
+                else -> Icons.Filled.Home
             }
             val label = when (screen) {
                 Screen.HOME -> "Home"
@@ -247,6 +270,7 @@ fun AppNavigationBar(
                 else -> ""
             }
 
+            // Animazioni per l'icona e il testo quando l'elemento è selezionato
             val scale by animateFloatAsState(targetValue = if (selected) 1.1f else 1.0f, label = "navItemScale")
             val alpha by animateFloatAsState(targetValue = if (selected) 1f else 0.7f, label = "navItemAlpha")
 
@@ -271,7 +295,7 @@ fun AppNavigationBar(
                     selectedTextColor = MaterialTheme.colorScheme.primary,
                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    indicatorColor = Color.Transparent // Make default indicator transparent
+                    indicatorColor = Color.Transparent
                 ),
                 alwaysShowLabel = true
             )
@@ -279,15 +303,19 @@ fun AppNavigationBar(
     }
 }
 
-
+/**
+ * Funzione composable principale che gestisce il flusso dell'intera app.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DecisionistaApp() {
+    // Gestione dello stato dell'app
     var currentScreen by remember { mutableStateOf(Screen.SPLASH) }
     var userEmail by remember { mutableStateOf("") }
     var registeredUsers by remember { mutableStateOf(mapOf<String, UserAccountData>()) }
     var oracleConsultationsCount by remember { mutableIntStateOf(0) }
 
+    // Gestione del tema tramite DataStore
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val systemIsInDarkTheme = isSystemInDarkTheme()
@@ -306,24 +334,25 @@ fun DecisionistaApp() {
         }
     }
 
-    var showLogoutDialog by remember { mutableStateOf(false) } 
-    var showTermsDialog by remember { mutableStateOf(false) } 
-    var showResetDialog by remember { mutableStateOf(false) } // NUOVO: Stato per il dialogo azzeramento dati
+    // Gestione dello stato per i dialoghi
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showTermsDialog by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // Carica gli utenti registrati all'avvio
     LaunchedEffect(key1 = context) {
         registeredUsers = loadRegisteredUsers(context)
         val loggedInEmail = loadLoggedInUser(context)
         if (!loggedInEmail.isNullOrBlank() && registeredUsers.containsKey(loggedInEmail)) {
             userEmail = loggedInEmail
-            // currentScreen = Screen.HOME // Splash screen will handle this if user is logged in
         } else {
             clearLoggedInUser(context)
-            // if (currentScreen != Screen.SPLASH) currentScreen = Screen.LOGIN // Splash will handle this
         }
     }
 
+    // Carica le decisioni e il conteggio dell'oracolo per l'utente loggato
     var decisions by remember { mutableStateOf(listOf<SavedDecision>()) }
     val mainNavScreens = listOf(Screen.HOME, Screen.GLIMMERIO, Screen.ORACLE, Screen.PROFILE)
 
@@ -340,21 +369,17 @@ fun DecisionistaApp() {
             oracleConsultationsCount = 0
         }
     }
-    
-    LaunchedEffect(userEmail, currentScreen) {
+
+    // Naviga alla schermata Home se l'utente è già loggato
+    LaunchedEffect(currentScreen, userEmail) {
         if (currentScreen == Screen.SPLASH && userEmail.isNotBlank()) {
             currentScreen = Screen.HOME
-        }
-    }
-
-    LaunchedEffect(currentScreen, userEmail) {
-        val isTryingToAccessMainScreenWithoutAuth =
-            currentScreen in mainNavScreens && userEmail.isBlank()
-        if (isTryingToAccessMainScreenWithoutAuth && currentScreen != Screen.SPLASH) {
+        } else if (currentScreen in mainNavScreens && userEmail.isBlank()) {
             navigateToInitialAuthScreen()
         }
     }
 
+    // Callback per salvare le decisioni
     val updateAndSaveDecisions = { updatedDecisionsList: List<SavedDecision> ->
         decisions = updatedDecisionsList
         if (userEmail.isNotBlank() && userEmail != GUEST_USER_IDENTIFIER) {
@@ -364,17 +389,19 @@ fun DecisionistaApp() {
         }
     }
 
+    // Stato per la decisione in corso
     var currentOptions by remember { mutableStateOf(listOf<OptionData>()) }
     var selectedMethod by remember { mutableStateOf(DecisionMethod.RANDOM) }
     var currentDecisionResult by remember { mutableStateOf<String?>(null) }
 
+    // Callback per mostrare una Snackbar
     val showSnackbarMessage = { message: String ->
         coroutineScope.launch {
             snackbarHostState.showSnackbar(message)
         }
     }
-    
-    // NUOVO: Handler per la conferma dell'azzeramento dati
+
+    // Handler per la conferma dell'azzeramento dei dati
     val handleResetDataConfirm: () -> Unit = {
         if (userEmail.isNotBlank() && userEmail != GUEST_USER_IDENTIFIER) {
             decisions = listOf()
@@ -385,15 +412,16 @@ fun DecisionistaApp() {
             saveOracleCount(context, userEmail, 0)
             showSnackbarMessage("Cronologia decisioni e conteggio Oracolo azzerati.")
         }
-        showResetDialog = false // Chiudi il dialogo indipendentemente da successo/fallimento interno
+        showResetDialog = false
     }
 
+    // Handler per il tentativo di registrazione
     val handleAttemptToRegister: (String, String, String, String) -> Unit = { emailAttempt, passwordAttempt, confirmPasswordAttempt, magicNameAttempt ->
         val normalizedEmail = emailAttempt.lowercase(Locale.ROOT)
         val normalizedMagicName = magicNameAttempt.trim()
 
         val message: String = if (normalizedEmail.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(normalizedEmail).matches()) {
-            "Inserisci un\'email valida."
+            "Inserisci un'email valida."
         } else if (passwordAttempt.isBlank()) {
             "La password non può essere vuota."
         } else if (passwordAttempt.length < 6) {
@@ -419,24 +447,20 @@ fun DecisionistaApp() {
         showSnackbarMessage(message)
     }
 
+    // Handler per il tentativo di login
     val handleAttemptToLogin: (String, String) -> Unit = { identifierAttempt, passwordAttempt ->
-        // identifierAttempt può essere un'email o un Nome Magico
         val normalizedIdentifier = identifierAttempt.lowercase(Locale.ROOT).trim()
-
         var actualUserEmail: String? = null
         var userAccountData: UserAccountData? = null
 
-        // 1. Prova a trovare l'utente per email (se l'identifier ha un formato email valido)
+        // Tenta il login tramite email o Nome Magico
         if (Patterns.EMAIL_ADDRESS.matcher(normalizedIdentifier).matches() && registeredUsers.containsKey(normalizedIdentifier)) {
             actualUserEmail = normalizedIdentifier
             userAccountData = registeredUsers[actualUserEmail]
         } else {
-            // 2. Se non è un'email valida o non trovato per email, prova per Nome Magico (case-insensitive e trimmato)
-            // Questo blocco else viene eseguito se l'identifier non è un email valida OPPURE se è un email valida ma non trovata come chiave.
-            // In entrambi i casi, tentiamo la ricerca per Nome Magico.
             for ((emailKey, accData) in registeredUsers) {
                 if (accData.magicName.lowercase(Locale.ROOT).trim() == normalizedIdentifier) {
-                    actualUserEmail = emailKey // Trovato! actualUserEmail è l'email reale dell'utente
+                    actualUserEmail = emailKey
                     userAccountData = accData
                     break
                 }
@@ -452,47 +476,51 @@ fun DecisionistaApp() {
             if (userAccountData.hashedPassword != hashedPasswordAttempt) {
                 "Password Magica errata."
             } else {
-                // Login effettuato con successo
-                userEmail = actualUserEmail // Usa l'email reale dell'utente per lo stato interno
+                userEmail = actualUserEmail
                 saveLoggedInUser(context, actualUserEmail)
                 currentScreen = Screen.HOME
-                val magicNameToDisplay = userAccountData.magicName // Usa il Nome Magico per il saluto
+                val magicNameToDisplay = userAccountData.magicName
                 "Accesso riuscito, Nobile $magicNameToDisplay!"
             }
         }
         showSnackbarMessage(message)
     }
 
+    // Handler per il conteggio delle consultazioni dell'Oracolo
     val handleOracleConsulted = {
         if (userEmail.isNotBlank() && userEmail != GUEST_USER_IDENTIFIER) {
             oracleConsultationsCount++
             saveOracleCount(context, userEmail, oracleConsultationsCount)
         }
     }
-    
-    val handleGuestLogin: () -> Unit = { 
+
+    // Handler per il login come ospite
+    val handleGuestLogin: () -> Unit = {
         userEmail = GUEST_USER_IDENTIFIER
-        oracleConsultationsCount = 0 
+        oracleConsultationsCount = 0
         clearLoggedInUser(context)
         currentScreen = Screen.HOME
         showSnackbarMessage("Accesso come ospite.")
     }
 
-    val handleLogout: () -> Unit = { 
+    // Handler per il logout
+    val handleLogout: () -> Unit = {
         clearLoggedInUser(context)
         userEmail = ""
         decisions = listOf()
         currentOptions = listOf()
         selectedMethod = DecisionMethod.RANDOM
         currentDecisionResult = null
-        oracleConsultationsCount = 0 
+        oracleConsultationsCount = 0
         showLogoutDialog = false
         navigateToInitialAuthScreen()
         showSnackbarMessage("Logout effettuato.")
     }
 
+    // Controlla se mostrare la barra di navigazione inferiore
     val showNavBar = currentScreen in mainNavScreens && userEmail.isNotBlank()
 
+    // Applica il tema all'intera app
     DecisionistaAppTheme(useDarkTheme = isDarkMode) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -504,9 +532,10 @@ fun DecisionistaApp() {
                     )
                 }
             },
-            containerColor = MaterialTheme.colorScheme.background 
+            containerColor = MaterialTheme.colorScheme.background
         ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) { 
+            Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                // Se l'utente è loggato, mostra le schermate principali
                 if (showNavBar) {
                     val homeScreenUserName = if (userEmail == GUEST_USER_IDENTIFIER) {
                         "Ospite"
@@ -528,13 +557,13 @@ fun DecisionistaApp() {
                         oracleConsultationsCount = oracleConsultationsCount,
                         isDarkModeActual = isDarkMode,
                         onDarkModeChange = onActualDarkModeChange,
-                        showLogoutDialogActual = showLogoutDialog, 
+                        showLogoutDialogActual = showLogoutDialog,
                         onShowLogoutDialogChange = { showLogoutDialog = it },
                         showTermsDialogActual = showTermsDialog,
                         onShowTermsDialogChange = { showTermsDialog = it },
-                        showResetDialogActual = showResetDialog, // NUOVO
-                        onShowResetDialogChange = { showResetDialog = it }, // NUOVO
-                        onResetDataConfirmActual = handleResetDataConfirm, // NUOVO
+                        showResetDialogActual = showResetDialog,
+                        onShowResetDialogChange = { showResetDialog = it },
+                        onResetDataConfirmActual = handleResetDataConfirm,
                         onStartDecision = {
                             currentOptions = listOf()
                             selectedMethod = DecisionMethod.RANDOM
@@ -555,6 +584,7 @@ fun DecisionistaApp() {
                         onOracleConsulted = handleOracleConsulted
                     )
                 } else {
+                    // Altrimenti, mostra le schermate di autenticazione o lo splash screen
                     NonMainScreensContainer(
                         currentScreen = currentScreen,
                         userEmail = userEmail,
@@ -570,7 +600,7 @@ fun DecisionistaApp() {
                             currentScreen = newScreen
                         },
                         onLoginAttempt = handleAttemptToLogin,
-                        onRegisterAttempt = handleAttemptToRegister, 
+                        onRegisterAttempt = handleAttemptToRegister,
                         onGuestLogin = handleGuestLogin,
                         onNavigateToInitialAuth = navigateToInitialAuthScreen
                     )
@@ -580,6 +610,9 @@ fun DecisionistaApp() {
     }
 }
 
+/**
+ * Contenitore per le schermate principali che hanno la barra di navigazione.
+ */
 @Composable
 private fun MainScreensContainer(
     currentScreen: Screen,
@@ -594,9 +627,9 @@ private fun MainScreensContainer(
     onShowLogoutDialogChange: (Boolean) -> Unit,
     showTermsDialogActual: Boolean,
     onShowTermsDialogChange: (Boolean) -> Unit,
-    showResetDialogActual: Boolean, // NUOVO
-    onShowResetDialogChange: (Boolean) -> Unit, // NUOVO
-    onResetDataConfirmActual: () -> Unit, // NUOVO
+    showResetDialogActual: Boolean,
+    onShowResetDialogChange: (Boolean) -> Unit,
+    onResetDataConfirmActual: () -> Unit,
     onStartDecision: () -> Unit,
     onNavigateToResult: (SavedDecision) -> Unit,
     onDeleteDecision: (SavedDecision) -> Unit,
@@ -606,7 +639,7 @@ private fun MainScreensContainer(
 ) {
     when (currentScreen) {
         Screen.HOME -> HomeScreen(
-            userName = homeScreenUserName, 
+            userName = homeScreenUserName,
             decisionsMadeCount = decisions.size,
             oracleConsultationsCount = oracleConsultationsCount,
             recentDecisions = decisions.takeLast(3).reversed(),
@@ -621,34 +654,37 @@ private fun MainScreensContainer(
         )
         Screen.ORACLE -> OracleScreen(
             onBack = onBackFromSubScreen,
-            onNavigateToResult = onNavigateToResult, // Consider removal if not used by OracleScreen
-            onOracleConsulted = onOracleConsulted 
+            onNavigateToResult = onNavigateToResult,
+            onOracleConsulted = onOracleConsulted
         )
         Screen.PROFILE -> {
-            val profileDisplayName = if (userEmail == GUEST_USER_IDENTIFIER) "Ospite" 
-                                     else registeredUsers[userEmail]?.magicName ?: userEmail.substringBefore("@")
+            val profileDisplayName = if (userEmail == GUEST_USER_IDENTIFIER) "Ospite"
+            else registeredUsers[userEmail]?.magicName ?: userEmail.substringBefore("@")
             ProfileScreen(
                 userEmail = if (userEmail == GUEST_USER_IDENTIFIER) "" else userEmail,
                 magicName = profileDisplayName,
                 onLogout = onLogout,
                 onBack = onBackFromSubScreen,
-                decisions = decisions, 
+                decisions = decisions,
                 onNavigateToResult = onNavigateToResult,
                 isDarkModeActual = isDarkModeActual,
                 onDarkModeChange = onDarkModeChange,
-                showLogoutDialog = showLogoutDialogActual, 
+                showLogoutDialog = showLogoutDialogActual,
                 onShowLogoutDialogChange = onShowLogoutDialogChange,
-                showTermsDialog = showTermsDialogActual, 
+                showTermsDialog = showTermsDialogActual,
                 onShowTermsDialogChange = onShowTermsDialogChange,
-                showResetDialog = showResetDialogActual, // NUOVO
-                onShowResetDialogChange = onShowResetDialogChange, // NUOVO
-                onResetDataConfirm = onResetDataConfirmActual // NUOVO
+                showResetDialog = showResetDialogActual,
+                onShowResetDialogChange = onShowResetDialogChange,
+                onResetDataConfirm = onResetDataConfirmActual
             )
         }
-        else -> { /* No action */ }
+        else -> { /* Nessuna azione */ }
     }
 }
 
+/**
+ * Contenitore per le schermate che non hanno la barra di navigazione.
+ */
 @Composable
 private fun NonMainScreensContainer(
     currentScreen: Screen,
@@ -683,8 +719,8 @@ private fun NonMainScreensContainer(
             onGuest = onGuestLogin
         )
         Screen.REGISTER -> RegisterScreen(
-            onRegister = { emailVal, passwordVal, confirmPasswordVal, magicNameVal -> 
-                onRegisterAttempt(emailVal, passwordVal, confirmPasswordVal, magicNameVal) 
+            onRegister = { emailVal, passwordVal, confirmPasswordVal, magicNameVal ->
+                onRegisterAttempt(emailVal, passwordVal, confirmPasswordVal, magicNameVal)
             },
             onBack = { onNavigate(Screen.LOGIN) }
         )
@@ -695,7 +731,7 @@ private fun NonMainScreensContainer(
             onBack = {
                 if (userEmail.isNotBlank()) onNavigate(Screen.HOME) else onNavigateToInitialAuth()
             },
-            onNavigateToHome = { onNavigate(Screen.HOME) } 
+            onNavigateToHome = { onNavigate(Screen.HOME) }
         )
         Screen.METHOD_SELECTION -> MethodSelectionScreen(
             selectedMethod = selectedMethod,
@@ -731,6 +767,6 @@ private fun NonMainScreensContainer(
                 onNavigate(Screen.HOME)
             }
         )
-        else -> { /* No action for screens handled by MainScreensContainer */ }
+        else -> { /* Nessuna azione per le schermate gestite da MainScreensContainer */ }
     }
 }

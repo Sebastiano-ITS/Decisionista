@@ -1,5 +1,6 @@
 package com.example.decisionista.ui.home
 
+// Import delle librerie di Jetpack Compose e altre utility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -28,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -69,6 +69,18 @@ import com.example.decisionista.ui.theme.statsOracleConsultationBackgroundColor
 import com.example.decisionista.ui.theme.statsOracleConsultationLabelValueColor
 import com.example.decisionista.utils.formatTimestamp
 
+/**
+ * Schermata principale dell'app.
+ * Questa funzione composable è il punto di ingresso per la visualizzazione della home.
+ * Gestisce la UI principale, i dialoghi e delega la creazione delle sezioni a funzioni più piccole.
+ *
+ * @param userName Il nome dell'utente da visualizzare.
+ * @param decisionsMadeCount Il numero di decisioni prese.
+ * @param oracleConsultationsCount Il numero di consultazioni all'oracolo.
+ * @param recentDecisions La lista delle decisioni recenti da mostrare.
+ * @param onStartDecision La funzione da chiamare quando l'utente vuole iniziare una nuova decisione.
+ * @param onNavigateToResult La funzione da chiamare per navigare alla pagina del risultato di una decisione.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -80,9 +92,12 @@ fun HomeScreen(
     onStartDecision: () -> Unit,
     onNavigateToResult: (SavedDecision) -> Unit
 ) {
+    // Stato per controllare la visibilità dei dialoghi di aiuto e notifiche.
+    // L'uso di `remember` e `mutableStateOf` fa sì che lo stato persista durante i "recomposition".
     var showHelpDialog by remember { mutableStateOf(false) }
     var showNotificationsDialog by remember { mutableStateOf(false) }
 
+    // Pennello per lo sfondo a gradiente della schermata.
     val screenBackgroundBrush = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
@@ -90,8 +105,10 @@ fun HomeScreen(
         )
     )
 
+    // `Scaffold` fornisce una struttura di base per la schermata, includendo una Top Bar.
     Scaffold(
         topBar = {
+            // Chiamata alla funzione composable per creare la barra superiore.
             HomeTopAppBar(
                 userName = userName,
                 onHelpClick = { showHelpDialog = true },
@@ -99,30 +116,35 @@ fun HomeScreen(
             )
         }
     ) { innerPadding ->
+        // Contenuto principale della schermata, all'interno di una colonna scorrevole.
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .background(screenBackgroundBrush)
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp) // Leggermente ridotto per più spazio ai lati
+                .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(16.dp)) // Spazio sotto TopAppBar
+            Spacer(modifier = Modifier.height(16.dp))
+            // Area per avviare una nuova decisione.
             MainDecisionArea(onStartDecision = onStartDecision)
             Spacer(modifier = Modifier.height(24.dp))
+            // Sezione per le statistiche.
             StatsSection(
                 decisionsMadeCount = decisionsMadeCount,
                 oracleConsultationsCount = oracleConsultationsCount
             )
             Spacer(modifier = Modifier.height(24.dp))
+            // Sezione per le decisioni recenti.
             RecentDecisionsSection(
                 recentDecisions = recentDecisions,
                 onNavigateToResult = onNavigateToResult
             )
-            Spacer(modifier = Modifier.height(24.dp)) // Padding inferiore più generoso
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
+    // `AlertDialog` per mostrare la finestra di aiuto. La visibilità è controllata dallo stato `showHelpDialog`.
     if (showHelpDialog) {
         AlertDialog(
             onDismissRequest = { showHelpDialog = false },
@@ -136,6 +158,7 @@ fun HomeScreen(
         )
     }
 
+    // `AlertDialog` per mostrare la finestra delle notifiche.
     if (showNotificationsDialog) {
         AlertDialog(
             onDismissRequest = { showNotificationsDialog = false },
@@ -150,6 +173,13 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Componente composable per la barra superiore personalizzata.
+ *
+ * @param userName Il nome dell'utente.
+ * @param onHelpClick La funzione da chiamare al click sull'icona di aiuto.
+ * @param onNotificationsClick La funzione da chiamare al click sull'icona delle notifiche.
+ */
 @Composable
 fun HomeTopAppBar(
     userName: String,
@@ -164,39 +194,43 @@ fun HomeTopAppBar(
                     colors = listOf(PrimaryPurple, PrimaryBlue)
                 )
             )
-            .padding(horizontal = 16.dp, vertical = 16.dp) // Aumentato padding verticale
+            .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
+            // Riga per le icone di aiuto e notifiche.
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically // Allineamento verticale icone
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Icona di aiuto, cliccabile.
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                     contentDescription = stringResource(R.string.home_icon_content_description_help),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
-                        .size(35.dp) // Aumentata dimensione icona
+                        .size(35.dp)
                         .clickable { onHelpClick() }
-                        .padding(4.dp) // Padding per area cliccabile maggiore
+                        .padding(4.dp)
                 )
+                // Icona delle notifiche, cliccabile.
                 Icon(
                     imageVector = Icons.Filled.Notifications,
                     contentDescription = stringResource(R.string.home_icon_content_description_notifications),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier
-                        .size(35.dp) // Aumentata dimensione icona
+                        .size(35.dp)
                         .clickable { onNotificationsClick() }
-                        .padding(4.dp) // Padding per area cliccabile maggiore
+                        .padding(4.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp)) // Ridotto spacer
+            Spacer(modifier = Modifier.height(16.dp))
+            // Colonna per il nome dell'utente e il sottotitolo di benvenuto.
             Column(
-                modifier = Modifier.fillMaxWidth(), // Rimosso padding(top=8dp) qui, gestito da Spacer
-                horizontalAlignment = Alignment.CenterHorizontally // Centra il testo del nome e sottotitolo
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = userName,
@@ -218,8 +252,14 @@ fun HomeTopAppBar(
     }
 }
 
+/**
+ * Componente per la sezione principale di avvio.
+ *
+ * @param onStartDecision La funzione da chiamare per avviare una decisione.
+ */
 @Composable
 fun MainDecisionArea(onStartDecision: () -> Unit) {
+    // Animazione per creare un effetto di pulsazione sul pulsante principale.
     val infiniteTransition = rememberInfiniteTransition(label = "evoca_button_pulse_transition")
     val pulseScale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -234,9 +274,10 @@ fun MainDecisionArea(onStartDecision: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp), // Leggermente ridotto padding superiore se c'è già lo spacer globale
+            .padding(top = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Contenitore per l'immagine del mago con sfondo a gradiente e bordi arrotondati.
         Box(
             modifier = Modifier
                 .size(150.dp)
@@ -248,7 +289,7 @@ fun MainDecisionArea(onStartDecision: () -> Unit) {
                 ),
             contentAlignment = Alignment.Center
         ) {
-            // Immagine con bordi arrotondati, caricata in modo asincrono con Coil
+            // Caricamento asincrono dell'immagine con la libreria Coil.
             AsyncImage(
                 model = R.drawable.mago,
                 contentDescription = "Punto di Partenza",
@@ -256,10 +297,10 @@ fun MainDecisionArea(onStartDecision: () -> Unit) {
                     .size(120.dp)
                     .clip(CircleShape)
                     .shadow(
-                        elevation = 26.dp, // L'altezza "dell'ombra"
+                        elevation = 26.dp,
                         shape = CircleShape,
-                        ambientColor = Color.Black.copy(alpha = 0.5f), // Colore dell'ombra
-                        spotColor = Color.Black.copy(alpha = 0.5f) // Colore dell'ombra
+                        ambientColor = Color.Black.copy(alpha = 0.5f),
+                        spotColor = Color.Black.copy(alpha = 0.5f)
                     ),
                 contentScale = ContentScale.Crop
             )
@@ -276,9 +317,10 @@ fun MainDecisionArea(onStartDecision: () -> Unit) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 8.dp) // Aggiunto padding orizzontale al testo descrittivo
+            modifier = Modifier.padding(horizontal = 8.dp)
         )
         Spacer(modifier = Modifier.height(32.dp))
+        // Il pulsante principale di avvio, con animazione e ombra.
         val buttonShape = RoundedCornerShape(12.dp)
         Box(
             modifier = Modifier
@@ -318,22 +360,28 @@ fun MainDecisionArea(onStartDecision: () -> Unit) {
     }
 }
 
-
-
+/**
+ * Componente per la sezione delle statistiche.
+ *
+ * @param decisionsMadeCount Il numero di decisioni prese.
+ * @param oracleConsultationsCount Il numero di consultazioni all'oracolo.
+ */
 @Composable
 fun StatsSection(decisionsMadeCount: Int, oracleConsultationsCount: Int) {
     Column {
         Text(
             text = stringResource(R.string.home_mystic_path_title),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold, // Reso Bold per più importanza
+            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 16.dp) // Aumentato padding bottom
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+        // Riga per disporre le due schede statistiche fianco a fianco.
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Scheda per le decisioni prese.
             DecisionStatsCard(
                 label = stringResource(R.string.home_stats_decisions_made),
                 value = decisionsMadeCount.toString(),
@@ -342,6 +390,7 @@ fun StatsSection(decisionsMadeCount: Int, oracleConsultationsCount: Int) {
                 valueColor = statsDecisionMadeLabelValueColor,
                 backgroundColor = statsDecisionMadeBackgroundColor
             )
+            // Scheda per le consultazioni all'oracolo.
             DecisionStatsCard(
                 label = stringResource(R.string.home_stats_oracle_consultations),
                 value = "$oracleConsultationsCount",
@@ -354,6 +403,12 @@ fun StatsSection(decisionsMadeCount: Int, oracleConsultationsCount: Int) {
     }
 }
 
+/**
+ * Componente per la sezione delle attività recenti.
+ *
+ * @param recentDecisions La lista delle decisioni recenti.
+ * @param onNavigateToResult La funzione di navigazione.
+ */
 @Composable
 fun RecentDecisionsSection(
     recentDecisions: List<SavedDecision>,
@@ -363,10 +418,11 @@ fun RecentDecisionsSection(
         Text(
             text = stringResource(R.string.home_recent_activity_title),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold, // Reso Bold
+            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 16.dp) // Unificato padding bottom
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+        // Se la lista è vuota, mostra un messaggio di stato vuoto.
         if (recentDecisions.isEmpty()) {
             Column(
                 modifier = Modifier
@@ -392,11 +448,12 @@ fun RecentDecisionsSection(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp) // Aggiunto padding orizzontale
+                    modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp)
                 )
             }
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) { // Leggermente ridotto spazio tra le card
+            // Altrimenti, mostra la lista delle decisioni recenti.
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 recentDecisions.forEach { decision ->
                     RecentDecisionItem(
                         decision = decision,
@@ -408,6 +465,12 @@ fun RecentDecisionsSection(
     }
 }
 
+/**
+ * Componente per un singolo elemento nella lista delle decisioni recenti.
+ *
+ * @param decision L'oggetto `SavedDecision` da visualizzare.
+ * @param onClick La funzione da chiamare quando l'elemento viene cliccato.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecentDecisionItem(
@@ -422,8 +485,8 @@ fun RecentDecisionItem(
             .clip(cardShape),
         shape = cardShape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), // Aggiunta leggera elevazione
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)) // Bordo più tenue
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -435,22 +498,23 @@ fun RecentDecisionItem(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             val prefixFromResource = stringResource(R.string.recent_decision_item_result_prefix)
-            // Assicura che ci sia " : " (spazio, due punti, spazio) tra il prefisso e il risultato
-            val labelText = prefixFromResource.trimEnd(' ', ':') + " : " 
+            // Assicura che ci sia " : " tra il prefisso e il risultato.
+            val labelText = prefixFromResource.trimEnd(' ', ':') + " : "
 
             Text(
-                text = labelText + decision.result, // Esempio: "Risultato : pino"
+                text = labelText + decision.result,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
+                // Trunca il testo con "..." se non sta in due righe.
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             Text(
-                text = formatTimestamp(decision.timestamp), // Now uses the imported function
+                text = formatTimestamp(decision.timestamp), // Funzione di utilità per formattare il timestamp
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
@@ -458,6 +522,16 @@ fun RecentDecisionItem(
     }
 }
 
+/**
+ * Componente riutilizzabile per visualizzare una singola statistica.
+ *
+ * @param label L'etichetta della statistica.
+ * @param value Il valore della statistica.
+ * @param modifier Il modificatore da applicare al componente.
+ * @param labelColor Il colore del testo dell'etichetta.
+ * @param valueColor Il colore del testo del valore.
+ * @param backgroundColor Il colore di sfondo della scheda.
+ */
 @Composable
 fun DecisionStatsCard(
     label: String,
@@ -469,11 +543,11 @@ fun DecisionStatsCard(
 ) {
     Card(
         modifier = modifier
-            .height(140.dp) // Altezza fissa per uniformità
-            .clip(RoundedCornerShape(16.dp)), // Raggio aumentato
+            .height(140.dp)
+            .clip(RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp) // Aggiunta leggera elevazione
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
@@ -484,18 +558,18 @@ fun DecisionStatsCard(
         ) {
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp), // Testo valore più grande
+                style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
                 fontWeight = FontWeight.ExtraBold,
                 color = valueColor,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(6.dp)) // Aumentato spacer
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
                 color = labelColor,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 4.dp) // Padding per evitare testo troppo vicino ai bordi
+                modifier = Modifier.padding(horizontal = 4.dp)
             )
         }
     }
